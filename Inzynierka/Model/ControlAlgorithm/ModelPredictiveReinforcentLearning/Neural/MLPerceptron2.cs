@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.Computing;
 
 
@@ -163,20 +164,28 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.N
         public void Build(int in_dim, int[] layer_size, CellType[] types)
         {
             #region validating arguments
+
             if (in_dim < 0 || layer_size.Length < 1 || layer_size.Length != types.Length)
+            {
                 throw new Exception(this.GetType().ToString() + ".Build: wrong arguments");
-            for (int l = 0; l < layer_size.Length; l++)
-                if (layer_size[l] < 1)
-                    throw new Exception(this.GetType().ToString() + ".Build: nonpositive layer size");
+            }
+            if (layer_size.Any(t => t < 1))
+            {
+                throw new Exception(this.GetType().ToString() + ".Build: nonpositive layer size");
+            }
             #endregion
 
             #region initializing structures
+
             InputAverage = new Vector(in_dim);
             InputAverage.FillWith(0);
+
             InputInvStddev = new Vector(in_dim);
             InputInvStddev.FillWith(1);
+
             Input = new Vector(in_dim);
             Layer = new ALayer[layer_size.Length];
+
             int layer_input_dim = in_dim;
             for (int l = 0; l < Layer.Length; l++)
             {
@@ -184,8 +193,10 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.N
                 Layer[l].Build(layer_input_dim, types[l], layer_size[l]);
                 layer_input_dim = Layer[l].Output.Dimension;
             }
+
             int out_dim = layer_size[layer_size.Length - 1];
             dL_dOutput = new Vector(out_dim);
+
             #endregion
 
             AfterConstruction();
@@ -197,12 +208,16 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.N
 
         public void Build(int in_dim, CellType type, int[] width)
         {
-            int layers_nr = width.Length;
-            CellType[] types = new CellType[layers_nr];
+            int layersNr = width.Length;
+            var types = new CellType[layersNr];
+
             int l = 0;
-            for (; l < layers_nr - 1; l++)
+            for (; l < layersNr - 1; l++)
+            {
                 types[l] = type;
+            }
             types[l] = CellType.Linear;
+
             Build(in_dim, width, types);
         }
 
@@ -211,6 +226,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.N
             int i, in_dim = Input.Dimension;
             if (in_av.Dimension != in_dim || in_stddev.Dimension != in_dim)
                 throw new Exception(this.GetType().ToString() + ".SetInputDescription(...)");
+
             Vector.Copy(in_av, ref InputAverage);
             for (i = 0; i < in_dim; i++)
             {
@@ -224,7 +240,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.N
         {
             for (int l = 0; l < Layer.Length - 1; l++)
             {
-                Matrix weights = Layer[l].Weights;
+                var weights = Layer[l].Weights;
                 for (int i = 0; i < weights.Height; i++)
                     for (int j = 0; j < weights.Width; j++)
                         weights[i, j] = GetNormalRandomValue(0, std_dev);

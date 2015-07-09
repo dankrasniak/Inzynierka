@@ -35,33 +35,33 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.R
         protected Vector[] NextStates; // następne stany na horyzoncie 
         protected double Vest;         // bieżąca ocena sterowań Actions 
 
-        public Advisor() : base()
+        public Advisor()
 		{
-			Sampler = new ASampler(); 
 			TimeIndex = 0;
 			AllVisits = new ArrayList(); 
+			Sampler = new ASampler(); 
 		}
 
-        new public void Init(double[] state_av, double[] state_stddev,
-            double[] action_min, double[] action_max,
-            int thetasize, int vsize, double discount, Reinforcement.ActualAction act_action)
-            // inicjalizacja 
+        public void Init(double[] state_av, double[] state_stddev,
+            double[] action_min, int vsize, double discount)
         {
             int StateDim = state_av.GetLength(0);
             int ActionDim = action_min.GetLength(0);
 
-            // budowa sieci neuronowej 
+            #region budowa sieci neuronowej
+
             V = new MLPerceptron2();
             V.Build(StateDim, CellType.Arcustangent, new int[] { vsize, 1 });
             V.SetInputDescription(new Vector(state_av), new Vector(state_stddev));
             V.InitWeights(1.0/Math.Sqrt(vsize+1));
             Vval = new Vector(1);
-            Vgrad = new Vector(1); 
-            // koniec budowy sieci neuronowej 
+            Vgrad = new Vector(1);
+
+            #endregion koniec budowy sieci neuronowej
 
             Gamma = discount;
 
-            H = 10;  // powinno przyjść z zewnątrz 
+            H = 10;  // TODO powinno przyjść z zewnątrz 
             Actions = new Vector[H];
             NextStates = new Vector[H];
             for (int i = 0; i < H; i++)
@@ -69,32 +69,19 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.R
                 Actions[i] = new Vector(ActionDim, 0.0);
                 NextStates[i] = new Vector(StateDim, 0.0); 
             }
-
-            // reszta parametrów niepotrzebna 
         }
 
-        public void SetParameters(
-            double a_stepsize, double v_stepsize,
-            double a_radius, double r_scalator,
-            double blur_sigma, int noise_inertia, double actor_penalty,
-            double lambda,
-            double alph_gam, double squash_param,
-            double max_int_intensity,
-            int int_steps_no, int window_width
-            )
-            // ustawienie parametrów 
-            // (ten ich zestaw jest od czapy)
+        public void SetParameters(double v_stepsize)
         {
             betaV = v_stepsize; 
         }
 
-        //	Name
-		public string CCName // nazwa 
+		public string CCName
 		{
 			get { return "MPctrl"; }
 		}
 
-		//  początek epizodu sterowania 
+		// początek epizodu sterowania 
 		public void CCStartInState(double[] state) 
 		{
             State = new Vector(state); 
@@ -114,7 +101,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.R
 
 		//  sterowanie zostało wykonane, 
         // system przeszedł do następnego stanu (należy zignorować reward) 
-		public void CCThisHappened(double reward, double[] next_state)
+		public void CCThisHappened(double[] next_state)
 		{
             if (ModelCzyStanDopuszczalny(new Vector(next_state)))
             {
@@ -143,6 +130,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.R
         #region Model - na razie zaślepki, wszystko uzależnione od modelu obiektu 
         protected bool ModelCzyStanDopuszczalny(Vector state)
         {
+            throw new NotImplementedException("ModelCzyStanDopuszczalny");
             return true; 
         }
 
@@ -156,12 +144,13 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.R
 
         protected Vector ModelNastepnyStan(Vector state, Vector action)
         {
+            throw new NotImplementedException("ModelNastepnyStan");
             return new Vector(state.Dimension, 0.0); 
         }
         #endregion 
 
+        // oblicz 
         protected double ObliczV(Vector state, Vector[] actions, ref Vector[] next_states)
-            // oblicz 
         {
             int h=actions.Length; 
             next_states = new Vector[h];
@@ -181,12 +170,13 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.R
             return val; 
         }
 
+        // iteracja algorytmu (1+1)
+        // zwraca, czy nastąpiła poprawa 
         protected bool Popraw(Vector state, double sigma, ref Vector[] actions, ref Vector[] next_states, ref double val)
-            // iteracja algorytmu (1+1)
-            // zwraca, czy nastąpiła poprawa 
         {
-            Vector[] _actions = new Vector[H];
-            Vector[] _next_states = new Vector[H];
+            var _actions = new Vector[H];
+            var _next_states = new Vector[H];
+
             for (int i = 0; i < H; i++)
             {
                 _actions[i] = actions[i].Clone();
@@ -195,6 +185,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.R
                         MinAction[j], _actions[i][j] + Sampler.SampleFromNormal(0, sigma)), 
                         MaxAction[j]); 
             }
+
             double _val = ObliczV(state, _actions, ref _next_states);
             if (_val > val)
             {

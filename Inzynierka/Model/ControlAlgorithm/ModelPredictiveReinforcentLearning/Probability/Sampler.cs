@@ -10,10 +10,6 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.P
     [Serializable]
     public class ASampler : Random, INormalSampler
     {
-        public ASampler()
-        {
-        }
-
         public double SampleFromNormal(double mean, double std_dev)
         {
             double z = -Math.Log(1.0 - NextDouble());

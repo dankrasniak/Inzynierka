@@ -90,14 +90,14 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
 
         #region EvoAlg
 
-        private int M = 10;
-        private double C1 = 0.82;
-        private double C2 = 1.2;
-        private double SigmaMin = 0.0001;
+        private readonly int M = 10;
+        private const double C1 = 0.82;
+        private const double C2 = 1.2;
+        private const double SigmaMin = 0.0001;
 
         // Standard deviation
         private double _sigma;
-        private double _startSigma = 0.001; // TODO
+        private readonly double _startSigma = 0.001; // TODO
         // Number of times the child specimen was chosen over the parent specimen in the last cicle of M iterations
         private int _phi;
         private int _iterationNum;
@@ -202,7 +202,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             return; // == 1.5
         }
 
-        private Random _rand = new Random(); //reuse this if you are generating many
+        private readonly Random _rand = new Random(); //reuse this if you are generating many
 
         private double GetGaussian() // TODO Verify
         {

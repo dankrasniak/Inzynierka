@@ -17,9 +17,11 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.R
         {
             TimeIndex = time_index;
             State = state.Clone();
+
             Actions = new Vector[actions.Length];
             for (int i = 0; i < actions.Length; i++)
                 Actions[i] = actions[i].Clone();
+
             NextStates = new Vector[next_states.Length];
             for (int i = 0; i < next_states.Length; i++)
                 NextStates[i] = next_states[i].Clone();

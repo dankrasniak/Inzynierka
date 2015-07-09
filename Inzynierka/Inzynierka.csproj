@@ -133,6 +133,8 @@
     </ApplicationDefinition>
     <Compile Include="Model\ControlAlgorithm\AAlgorithmFactory.cs" />
     <Compile Include="Model\ControlAlgorithm\IAlgorithm.cs" />
+    <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcentLearning\Computing\Matrix.cs" />
+    <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcentLearning\Computing\MatrixToolbox.cs" />
     <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcentLearning\ReinforcementPlatform\CCMPctrl\AdvisorCCMPctrl-Visit.cs" />
     <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcentLearning\ReinforcementPlatform\CCMPctrl\AdvisorCCMPctrl.cs" />
     <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcentLearning\Computing\Vector.cs" />
