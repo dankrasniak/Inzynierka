@@ -1,0 +1,45 @@
+﻿<Window x:Class="Inzynierka.View.Simulation"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:viewModel="clr-namespace:Inzynierka.ViewModel"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        Title="Simulation" Height="500" Width="800">
+    <Window.DataContext>
+        <viewModel:SimulationViewModel/>
+    </Window.DataContext>
+    <Grid Background="#FF1D1D1D" OpacityMask="Black">
+        <Menu Height="26" VerticalAlignment="Top">
+            <MenuItem Header="_File" Margin="0,1,0,0">
+            </MenuItem>
+        </Menu>
+        <Menu Margin="0,26,0,0" Height="26" VerticalAlignment="Top">
+            <MenuItem Header="_Krok" Margin="0,1,0,0" Command="{Binding StepButton}"/>
+            <MenuItem Header="_Zatrzymaj" Margin="0,1,0,0" Command="{Binding StopButton}"/>
+            <MenuItem Header="_Uruchom" Margin="0,1,0,0" Command="{Binding PlayButton}"/>
+        </Menu>
+        <Grid Margin="0,52,0,23">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Canvas Background="#FFFFFFFF" Margin="10" Grid.ColumnSpan="5" Grid.RowSpan="3">
+                <Path Canvas.Left="306" Canvas.Right="100" Canvas.Bottom="20" Canvas.Top="108" Width="107" Data="M61,125 L193,28" RenderTransformOrigin="0.5,0.5" Height="59" Fill="Blue" Stretch="Fill"/>
+                <Path Canvas.Left="61" Canvas.Top="28" Width="133" Height="98" Fill="Blue" Stretch="Fill" Data="M61,125 L193,28" StrokeThickness="10"/>
+                <TextBlock Canvas.Left="10" TextWrapping="Wrap" Text="{Binding Value}" Canvas.Top="191" Width="112"/>
+            </Canvas>
+            <Border BorderBrush="Black" BorderThickness="1" Grid.ColumnSpan="5" Grid.Column="0" Grid.Row="3" Grid.RowSpan="2"/>
+            <xctk:RadialGauge Grid.ColumnSpan="3" Grid.Column="1" Grid.RowSpan="4" Padding="0" MajorTickLabelOffset="-40" IsFullCircleBackground="False" Maximum="40000" NumericIndicatorOffsetY="47" RenderTransformOrigin="0,0" StartAngle="-135" StrokeThickness="0" TickMarkOffset="-6" Value="{Binding Value}" EndAngle="135" IsNumericIndicatorVisible="True" MajorTickCount="8" HorizontalAlignment="Left" Width="284" Height="237" VerticalAlignment="Top" Margin="94,10,0,0"/>
+        </Grid>
+        <StatusBar Background="#FF1D1D1D" OpacityMask="Black" Height="23" VerticalAlignment="Bottom"/>
+    </Grid>
+</Window>

@@ -1,0 +1,65 @@
+﻿<Window x:Class="Inzynierka.View.NewSimulation"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:viewModel="clr-namespace:Inzynierka.ViewModel"
+        Title="Nowa Symulacja" Height="500" Width="700" WindowStyle="ToolWindow" ShowInTaskbar="False" WindowStartupLocation="Manual" MinWidth="700" MinHeight="500" Topmost="True">
+    <Window.DataContext>
+        <viewModel:MainWindowViewModel/>
+    </Window.DataContext>
+    <Grid Background="#FF1D1D1D" OpacityMask="Black">
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Label Content="Proszę wybrać Algorytm Sterujący oraz Obiekt:" Grid.ColumnSpan="10" Margin="10" />
+        <Rectangle Fill="#FF363636" Stroke="Black" Grid.ColumnSpan="5" Margin="10" Grid.Row="1" Grid.RowSpan="7"/>
+        <Rectangle Fill="#FF363636" Stroke="Black" Grid.ColumnSpan="5" Grid.Column="5" Margin="10" Grid.Row="1" Grid.RowSpan="7"/>
+        <ComboBox ItemsSource="{Binding Algorithms}" SelectedItem="{Binding SelectedAlgorithm}" Height="43" Margin="20,25,20,0" VerticalAlignment="Top" Grid.ColumnSpan="5" Grid.Row="1" Grid.RowSpan="2">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Name}"/>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+        <ComboBox ItemsSource="{Binding Models}" SelectedItem="{Binding SelectedModel}" Grid.ColumnSpan="5" Grid.Column="5" Margin="20,25,20,0" Grid.Row="1" Height="42" VerticalAlignment="Top" Grid.RowSpan="2">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Name}"/>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+        <Button Content="Zatwierdź" HorizontalAlignment="Left" VerticalAlignment="Top" Width="119" Margin="10,10,0,0" Height="33" Grid.ColumnSpan="2" Grid.Column="6" Grid.Row="8" Click="AcceptButton"/>
+        <Button Content="Anuluj" VerticalAlignment="Top" Margin="10,10,0,0" Height="33" Click="Cancel" Grid.ColumnSpan="2" Grid.Column="8" Grid.Row="8" HorizontalAlignment="Left" Width="119"/>
+        <Label Content="Algorytm Sterujący:" Grid.ColumnSpan="5" Grid.Column="0" Margin="10,43,10,30" Grid.Row="0" Grid.RowSpan="2"/>
+        <Label Content="Opis algorytmu sterującego:" Grid.ColumnSpan="5" Grid.Column="0" Margin="19,19,21,1" Grid.Row="2"/>
+        <Label Content="Model:" Grid.ColumnSpan="5" Grid.Column="5" Margin="10,43,10,28" Grid.Row="0" Grid.RowSpan="2"/>
+        <Label Content="Opis obiektu:" Height="33" VerticalAlignment="Top" Grid.ColumnSpan="5" Grid.Column="5" Margin="19,19,21,0" Grid.Row="2"/>
+        <ScrollViewer Grid.ColumnSpan="5" Grid.Column="0" Margin="20,48,20,37" Grid.Row="2" Grid.RowSpan="6">
+            <TextBlock Text="{Binding AlgorithmDescription}" Height="Auto" VerticalAlignment="Top" TextWrapping="Wrap" Foreground="White"/>
+        </ScrollViewer>
+        <ScrollViewer Grid.ColumnSpan="5" Margin="22,48,20,39" Grid.Row="2" Grid.RowSpan="6" Grid.Column="5">
+            <TextBlock Text="{Binding ModelDescription}" Height="Auto" VerticalAlignment="Top" TextWrapping="Wrap" Foreground="White"/>
+        </ScrollViewer>
+
+
+    </Grid>
+</Window>
