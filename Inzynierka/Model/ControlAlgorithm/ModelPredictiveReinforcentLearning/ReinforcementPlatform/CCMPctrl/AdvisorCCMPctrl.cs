@@ -17,7 +17,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.R
         protected double betaV;       // parametr kroku dla tego aproksymatora 
 
         #region parametry 
-        protected int H;               // długość horyzontu
+        protected int HORIZON_SIZE;    // długość horyzontu
         protected int Vsize;           // wielkość sieci neuronowej V
         protected double Gamma;        // dyskonto 
         protected Vector MinAction;    // min sterowania 
@@ -42,6 +42,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.R
 			Sampler = new ASampler(); 
 		}
 
+        // CO TO SĄ ZA ZMIENNE STATE_STDDEV? STATE_STANDARD_DEVIATION????
         public void Init(double[] state_av, double[] state_stddev,
             double[] action_min, int vsize, double discount)
         {
@@ -61,10 +62,10 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.R
 
             Gamma = discount;
 
-            H = 10;  // TODO powinno przyjść z zewnątrz 
-            Actions = new Vector[H];
-            NextStates = new Vector[H];
-            for (int i = 0; i < H; i++)
+            HORIZON_SIZE = 10;  // TODO powinno przyjść z zewnątrz 
+            Actions = new Vector[HORIZON_SIZE];
+            NextStates = new Vector[HORIZON_SIZE];
+            for (int i = 0; i < HORIZON_SIZE; i++)
             {
                 Actions[i] = new Vector(ActionDim, 0.0);
                 NextStates[i] = new Vector(StateDim, 0.0); 
@@ -91,9 +92,9 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.R
         // i produkujemy sterowanie dla niego 
 		public void CCAdviseAction(ref double[] action)
 		{
-            Vest = ObliczV(State, Actions, ref NextStates); 
+            Vest = CalculateStateValue(State, Actions, ref NextStates); 
             for (int i = 0; i < 10; i++) // kilka poprawek
-                Popraw(State, 1, ref Actions, ref NextStates, ref Vest);
+                AdjustActions(State, 1, ref Actions, ref NextStates, ref Vest);
 
             AllVisits.Add(new AVisit(TimeIndex++, State, Actions, NextStates)); 
             action = Actions[0].Table; 
@@ -101,12 +102,12 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.R
 
 		//  sterowanie zostało wykonane, 
         // system przeszedł do następnego stanu (należy zignorować reward) 
-		public void CCThisHappened(double[] next_state)
+		public void CCThisHappened(double[] nextState)
 		{
-            if (ModelCzyStanDopuszczalny(new Vector(next_state)))
+            if (ModelIsStateAcceptable(new Vector(nextState)))
             {
-                State = new Vector(next_state);
-                for (int i = 0; i < H - 1; i++)
+                State = new Vector(nextState);
+                for (int i = 0; i < HORIZON_SIZE - 1; i++)
                 {
                     Actions[i] = Actions[i + 1];
                     NextStates[i] = NextStates[i + 1];
@@ -116,84 +117,105 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.R
             // dokonujemy poprawek historycznych sterowań i funkcji V
             for (int k = 0; k < 10; k++) // kilka kolejnych stanów początkowych do poprawienia 
             {
+                // Get random state & calculate its value
                 Visit = (AVisit)AllVisits[Sampler.Next(AllVisits.Count - 1)]; 
-                Vest = ObliczV(Visit.State, Visit.Actions, ref Visit.NextStates); 
-                for (int i = 0; i < 10; i++) // kilka poprawek
-                    Popraw(Visit.State, 1, ref Visit.Actions, ref Visit.NextStates, ref Vest);
+                Vest = CalculateStateValue(Visit.State, Visit.Actions, ref Visit.NextStates); 
 
+                // Try to Adjust its actions
+                for (int i = 0; i < 10; i++) // kilka poprawek
+                    AdjustActions(Visit.State, 1, ref Visit.Actions, ref Visit.NextStates, ref Vest);
+
+                // TODO EXPLAIN
+                // Get the state value from the approximator & add calculated discrepancy to its weights(NN).
                 V.Approximate(Visit.State, ref Vval);
-                Vgrad[0] = Vval[0] - Vest;
-                V.AddToWeights(Vgrad, -betaV); 
+                Vgrad[0] = Vval[0] - Vest; // TODO Czemu tylko [0]???
+                
+                V.AddToWeights(Vgrad, -betaV); // TODO zwróci błąd?
             }
         }
 
         #region Model - na razie zaślepki, wszystko uzależnione od modelu obiektu 
-        protected bool ModelCzyStanDopuszczalny(Vector state)
+        protected bool ModelIsStateAcceptable(Vector state)
         {
-            throw new NotImplementedException("ModelCzyStanDopuszczalny");
+            throw new NotImplementedException("ModelIsStateAcceptable");
             return true; 
         }
 
-        protected double ModelNagroda(Vector action, Vector next_state)
+        protected double ModelReward(Vector action, Vector next_state)
         {
-            if (ModelCzyStanDopuszczalny(next_state))
+            if (ModelIsStateAcceptable(next_state))
                 return 1;
             else
                 return 0; 
         }
 
-        protected Vector ModelNastepnyStan(Vector state, Vector action)
+        protected Vector ModelNextState(Vector state, Vector action)
         {
-            throw new NotImplementedException("ModelNastepnyStan");
+            throw new NotImplementedException("ModelNextState");
             return new Vector(state.Dimension, 0.0); 
         }
         #endregion 
 
-        // oblicz 
-        protected double ObliczV(Vector state, Vector[] actions, ref Vector[] next_states)
+        protected double CalculateStateValue(Vector state, Vector[] actions, ref Vector[] next_states)
         {
-            int h=actions.Length; 
+            // TODO h? Actions.length? HorizonSize?
+            int h = actions.Length; 
             next_states = new Vector[h];
-            Vector s = state;
-            double val = 0;
+            var stateTmp = state;
+            double value = 0;
             double gammai = 1; 
+
+            // Get the last state with the current actions
             for (int i = 0; i < h; i++)
             {
-                next_states[i] = s = ModelNastepnyStan(s, Actions[i]);
-                if (!ModelCzyStanDopuszczalny(s))
-                    return val; 
-                val += gammai * ModelNagroda(actions[i], s);
+                next_states[i] = stateTmp = ModelNextState(stateTmp, Actions[i]);
+                if (!ModelIsStateAcceptable(stateTmp))
+                    return value; 
+                value += gammai * ModelReward(actions[i], stateTmp);
                 gammai *= Gamma; 
             }
-            V.Approximate(s, ref Vval);
-            val += gammai * Vval[0];
-            return val; 
+
+            V.Approximate(stateTmp, ref Vval);
+            value += gammai * Vval[0];
+            
+            return value; 
         }
 
-        // iteracja algorytmu (1+1)
-        // zwraca, czy nastąpiła poprawa 
-        protected bool Popraw(Vector state, double sigma, ref Vector[] actions, ref Vector[] next_states, ref double val)
+        /// <summary>Iteracja algorytmu (1+1) </summary>
+        /// <returns>Zwraca, czy nastąpiła poprawa </returns>
+        protected bool AdjustActions(Vector state, double sigma, ref Vector[] currentActions, ref Vector[] currentNextStates, ref double stateValue)
         {
-            var _actions = new Vector[H];
-            var _next_states = new Vector[H];
+            var modifiedActions = new Vector[HORIZON_SIZE];
+            var newNextStates = new Vector[HORIZON_SIZE];
 
-            for (int i = 0; i < H; i++)
+            #region Modify the Action vector
+            for (int i = 0; i < HORIZON_SIZE; i++)
             {
-                _actions[i] = actions[i].Clone();
-                for (int j = 0; j < _actions[i].Dimension; j++)
-                    _actions[i][j] = Math.Min(Math.Max(
-                        MinAction[j], _actions[i][j] + Sampler.SampleFromNormal(0, sigma)), 
-                        MaxAction[j]); 
+                modifiedActions[i] = currentActions[i].Clone();
+                // < MinAction ; _action + Rand ; MaxAction >
+                for (int j = 0; j < modifiedActions[i].Dimension; j++) // MinAction and MaxAction never set
+                {
+                    modifiedActions[i][j] = Math.Min(
+                        Math.Max(MinAction[j], modifiedActions[i][j] + Sampler.SampleFromNormal(0, sigma)),
+                        MaxAction[j]);
+                }
+            }
+            #endregion
+
+            // If the value of the state with new action vector is bigger, replace the previous action vector
+            #region if bigger, replace the previous action vector
+
+            double stateNewValue = CalculateStateValue(state, modifiedActions, ref newNextStates);
+            if (stateNewValue > stateValue)
+            {
+                stateValue = stateNewValue; 
+                currentActions = modifiedActions;
+                currentNextStates = newNextStates;
+                return true;
             }
 
-            double _val = ObliczV(state, _actions, ref _next_states);
-            if (_val > val)
-            {
-                val = _val; 
-                actions = _actions;
-                next_states = _next_states;
-                return true; 
-            }
+            #endregion
+
             return false; 
         }
     }

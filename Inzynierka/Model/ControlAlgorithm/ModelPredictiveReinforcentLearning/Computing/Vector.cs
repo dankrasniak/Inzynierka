@@ -31,9 +31,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.C
             get;
         }
     }
-    /// <summary>
-    /// Summary description for Vector.
-    /// </summary>
+
     [Serializable]
     public class Vector : IVector
     {
@@ -68,6 +66,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.C
                 v = new Vector(dimension);
         }
 
+        /// <returns>a deep copy.</returns>
         public Vector Clone()
         {
             Vector ret = new Vector(Dimension);
@@ -76,6 +75,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.C
             return (ret);
         }
 
+        /// <summary>a deep copy.</summary>
         public static void Copy(IVector pattern, ref Vector v)
         {
             int dim = pattern.Dimension;
@@ -84,6 +84,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.C
                 v.Numbers[i] = pattern[i];
         }
 
+        /// <summary>a deep copy.</summary>
         public static void Copy(IVector pattern, ref double[] array)
         {
             int dim = pattern.Dimension;
@@ -93,6 +94,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.C
                 array[i] = pattern[i];
         }
 
+        /// <summary>a deep copy.</summary>
         public static void Copy(double[] pattern, ref Vector v)
         {
             int dim = pattern.Length;
@@ -101,6 +103,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.C
                 v.Numbers[i] = pattern[i];
         }
 
+        /// <summary>a deep copy.</summary>
         public static void Copy(double[] pattern, ref double[] array)
         {
             int dim = pattern.Length;
@@ -154,13 +157,14 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.C
         {
             if (this_offset + length > Dimension || v_offset + length > v.Dimension)
                 throw new Exception(this.GetType().ToString() + ".InsertPart()");
+
             for (int i = 0; i < length; i++)
                 this[this_offset + i] = v[v_offset + i];
         }
 
         public Vector Subvector(int position, int dimension)
         {
-            Vector ret = new Vector(dimension);
+            var ret = new Vector(dimension);
             for (int i = 0; i < dimension; i++)
                 ret[i] = Numbers[position + i];
             return (ret);
@@ -204,7 +208,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.C
             int dim = v1.Dimension;
             if (dim != v2.Dimension)
                 throw (new Exception("Vector.operator+() wrong vectors dimensions"));
-            Vector ret = new Vector(dim);
+            var ret = new Vector(dim);
             for (int i = 0; i < dim; i++)
                 ret[i] = v1[i] + v2[i];
             return (ret);
@@ -215,7 +219,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.C
             int dim = v1.Dimension;
             if (dim != v2.Dimension)
                 throw (new Exception("Vector.operator-() wrong vectors dimensions"));
-            Vector ret = new Vector(dim);
+            var ret = new Vector(dim);
             for (int i = 0; i < dim; i++)
                 ret[i] = v1[i] - v2[i];
             return (ret);
@@ -233,7 +237,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.C
         public static Vector operator /(Vector v, double divisor)
         {
             int dim = v.Dimension;
-            Vector ret = new Vector(dim);
+            var ret = new Vector(dim);
             for (int i = 0; i < dim; i++)
                 ret[i] = v[i] / divisor;
             return (ret);
@@ -274,7 +278,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.C
             int cols = m.Width;
             if (v.Dimension != rows)
                 throw new Exception("Computing.Vector.operator*(Vector,Matrix)");
-            Vector ret = new Vector(cols);
+            var ret = new Vector(cols);
             ret.FillWith(0);
             for (int j = 0; j < cols; j++)
                 for (int i = 0; i < rows; i++)
@@ -288,7 +292,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.C
             int dim = v1.Dimension;
             if (dim != v2.Dimension)
                 throw (new Exception("Vector.operator&() wrong vectors dimensions"));
-            Vector ret = new Vector(dim);
+            var ret = new Vector(dim);
             for (int i = 0; i < dim; i++)
                 ret[i] = v1[i] * v2[i];
             return (ret);
@@ -298,7 +302,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.C
         public static Matrix operator |(Vector v1, Vector v2)
         {
             int dim1 = v1.Dimension, dim2 = v2.Dimension;
-            Matrix ret = new Matrix(dim1, dim2);
+            var ret = new Matrix(dim1, dim2);
             for (int i = 0; i < dim1; i++)
                 for (int j = 0; j < dim2; j++)
                     ret[i, j] = v1[i] * v2[j];

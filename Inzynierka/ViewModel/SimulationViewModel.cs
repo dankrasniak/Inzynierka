@@ -1,13 +1,8 @@
-﻿using System;
-using System.ComponentModel;
-using System.Linq.Expressions;
-using System.Net.Mime;
+﻿using Inzynierka.Model.ControlAlgorithm.PredictionControl;
+using Inzynierka.Model.Model;
+using System;
 using System.Threading;
 using System.Windows.Input;
-using Inzynierka.Model.ControlAlgorithm.PredictionControl;
-using Inzynierka.Model.Model;
-using Inzynierka.View;
-using Xceed.Wpf.Toolkit.Panels;
 
 namespace Inzynierka.ViewModel
 {
@@ -21,6 +16,10 @@ namespace Inzynierka.ViewModel
 
         public Boolean Loop { get; set; }
 
+        public Boolean Faster { get; set; }
+
+        public Boolean IsFinished { get; set; }
+
         public string TEXT { get; set; }
 
 
@@ -29,6 +28,7 @@ namespace Inzynierka.ViewModel
         public ICommand StepButton { get; set; }
         public ICommand StopButton { get; set; }
         public ICommand PlayButton { get; set; }
+        public ICommand FasterButton { get; set; }
 
         #endregion Buttons
 
@@ -47,40 +47,45 @@ namespace Inzynierka.ViewModel
             #region ButtonInitialisation
             StepButton = new ButtonCommand(
                 () =>
-                {
-                    // Step of a simulation
-
+                { // Step of a simulation
                     Value = ((PredictionControl) Algorithm).GetValueTMP();
                     OnPropertyChanged("Value");
                 },
                 () =>
-                {
-                    // Not playing?
-                    return true;
+                { // Not playing?
+                    return !Loop && !Faster;
                 }
             );
             StopButton = new ButtonCommand(
                 () =>
-                {
-                    // Stops the simulation
+                { // Stops the simulation
                     Loop = false;
+                    Faster = false;
                 },
                 () =>
-                {
-                    // Simulation must be played
+                { // Simulation must be played
                     return true;
                 }
             );
             PlayButton = new ButtonCommand(
                 () =>
-                {
-                    // Starts the simulation
-                    // New thread, receives events => stop
+                { // Starts the simulation. New thread, receives events => stop
                     Loop = true;
+                    Faster = false;
+                },
+                () =>
+                { // Must not be played?
+                    return true;
+                }
+            );
+            FasterButton = new ButtonCommand(
+                () =>
+                {
+                    Loop = false;
+                    Faster = true;
                 },
                 () =>
                 {
-                    // Must not be played?
                     return true;
                 }
             );
@@ -90,21 +95,38 @@ namespace Inzynierka.ViewModel
 
             Value = 0;
             Loop = false;
+            IsFinished = false;
             var thread = new Thread(this.Foo);
             thread.Start();
+
             #endregion Thread
         }
 
-        public void Foo()
+        private void Foo()
         {
-            while (true)
+            while (!IsFinished)
             {
                 while (Loop)
                 {
-                    Value = ((PredictionControl)Algorithm).GetValueTMP();
+                    Value = ((PredictionControl) Algorithm).GetValueTMP();
                     OnPropertyChanged("Value");
                 }
-                Thread.Sleep(1000);
+                while (Faster)
+                {
+
+                    ((PredictionControl)Algorithm).GetValueTMP();
+                    ((PredictionControl)Algorithm).GetValueTMP();
+                    ((PredictionControl)Algorithm).GetValueTMP();
+                    ((PredictionControl)Algorithm).GetValueTMP();
+                    ((PredictionControl)Algorithm).GetValueTMP();
+                    ((PredictionControl)Algorithm).GetValueTMP();
+                    ((PredictionControl)Algorithm).GetValueTMP();
+                    ((PredictionControl)Algorithm).GetValueTMP();
+                    ((PredictionControl)Algorithm).GetValueTMP();
+                    Value = ((PredictionControl) Algorithm).GetValueTMP();
+                    OnPropertyChanged("Value");
+                }
+                System.Threading.Thread.Sleep(1000);
             }
         }
     }

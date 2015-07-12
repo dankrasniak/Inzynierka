@@ -1,4 +1,6 @@
-﻿using Inzynierka.Model.Logger;
+﻿using System.Data;
+using System.Linq;
+using Inzynierka.Model.Logger;
 using Inzynierka.Model.Model;
 using System;
 using System.Collections.Generic;
@@ -7,17 +9,17 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
 {
     public class PredictionControl : IAlgorithm
     {
-        private readonly LogIt logger;
+        private readonly LogIt _logger;
 
         private readonly IModel _model;
         private readonly List<Double> _state;
         private List<List<Double>> _horizon;
-        private readonly int _horizonSize = 20;
+        private readonly int _horizonSize;
         private double H_STEP_SIZE = 0.001; // TODO Verify
 
         public PredictionControl(IModel model, List<Property> properties, List<LoggedValue> loggedValues) 
         {
-            logger = new LogIt("", loggedValues); // TODO Add Path
+            _logger = new LogIt("", loggedValues); // TODO Add Path
 
             _model = model;
             _state = _model.GetInitialState();
@@ -43,29 +45,22 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
         public Double GetValueTMP()
         {
             var controlVariables = GetControlVariables();
-            logger.Log("Wartość wejściowa", controlVariables[0]);
+            _logger.Log("Wartość wejściowa", 
+                controlVariables.Aggregate("", (current, t) => current + (FormatDouble(t) + " ")));
 
-            var s = RungeKuttha(_state, controlVariables);
-            var STATE_VAR_COUNT = s.Count;
+            var nextState = RungeKuttha(_state, controlVariables);
+            var STATE_VAR_COUNT = nextState.Count;
 
             for (int i = 0; i < STATE_VAR_COUNT; ++i)
             {
-                _state[i] = s[i];
+                _state[i] = nextState[i];
             }
 
-            #region LogStateVariables
-
-            var stateVariables = "";
-            for (int i = 0; i < STATE_VAR_COUNT; ++i)
-            {
-                stateVariables += FormatDouble(_state[i]) + " ";
-            }
-            logger.Log("stateVariables", stateVariables); // TODO
-
-            #endregion LogStateVariables
+            _logger.Log("stateVariables", 
+                _state.Aggregate("", (s, d) => s + FormatDouble(d) + " ")); // TODO
 
             var result = _model.GetValue(_state);
-            logger.Log("Wartość wyjściowa", result); // TODO
+            _logger.Log("Wartość wyjściowa", result); // TODO
 
             return result;
         }
@@ -74,16 +69,8 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
         {
             PrepareHorizont();
 
-            #region Log Horizon Variables
-
-            var horizonLog = "";
-            for (var i = 0; i < _horizonSize; ++i)
-            {
-                horizonLog += FormatDouble(_horizon[i][0]) + " ";
-            }
-            logger.Log("horizon", horizonLog);
-
-            #endregion Log Horizon Variables
+            _logger.Log("horizon", 
+                _horizon.Aggregate("", (s, list) => s + FormatDouble(list[0]) + " "));
 
             return _horizon[0];
         }
@@ -119,60 +106,61 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
 
         private void NextIteration()
         {
-            var tmpHorizon = ModifyHorizon(_horizon);
+            var modifiedHorizon = ModifyHorizon(_horizon);
             
-            //var currentHorizonState = GetFinalState(_state, _horizon);
-            //var newHorizonState = GetFinalState(_state, tmpHorizon);
-            //logTest.Info("Possible states: " + FormatDouble(_model.GetValue(currentHorizonState)) + " VS: " + FormatDouble(_model.GetValue(newHorizonState)));
+            /*
+            var currentHorizonState = GetFinalState(_state, _horizon);
+            var newHorizonState = GetFinalState(_state, tmpHorizon);
+            _logger.Log("Possible states", "Possible states: " + FormatDouble(currentHorizonValue) + " VS: " + FormatDouble(newHorizonValue));
 
-            //if (!_model.IsFirstBetter(currentHorizonState, newHorizonState))
-            //    _horizon = tmpHorizon;
+            if (!_model.IsFirstBetter(currentHorizonState, newHorizonState))
+                _horizon = tmpHorizon;
+             */
 
             #region tmp
 
-            var currentHorizonStateTmp = GetHorizonStatesList(_state, _horizon);
-            var newHorizonStateTmp = GetHorizonStatesList(_state, tmpHorizon);
+            var currentHorizonValue = GetHorizonValue(_horizon);
+            var newHorizonValue = GetHorizonValue(modifiedHorizon);
 
-            var currentHorizonValue = 0.0;
-            var newHorizonValue = 0.0;
-            for (var i = 0; i < _horizonSize; ++i)
-            {
-                currentHorizonValue -= i*Math.Pow(_model.GetDiscrepancy(currentHorizonStateTmp[i]), 2);
-            }
-            for (var i = 0; i < _horizonSize; ++i)
-            {
-                newHorizonValue -= i*Math.Pow(_model.GetDiscrepancy(newHorizonStateTmp[i]), 2);
-            }
-
-            logger.Log("Possible states", "Possible states: " + FormatDouble(currentHorizonValue) + " VS: " + FormatDouble(newHorizonValue));
+            _logger.Log("Possible states", "Possible states: " + FormatDouble(currentHorizonValue) + " VS: " + FormatDouble(newHorizonValue)); // TODO
 
             if (currentHorizonValue <= newHorizonValue)
-                _horizon = tmpHorizon;
+                _horizon = modifiedHorizon;
+
             #endregion tmp
 
             UpdateSigma();
         }
 
-        private List<List<Double>> ModifyHorizon(List<List<Double>> horizon)
+        private double GetHorizonValue(IEnumerable<List<double>> horizon)
         {
-            var result = new List<List<Double>>();
-            int SIZE = horizon.Count;
-            int SIZE2 = (horizon[0]).Count;
+            var horizonValue = 0.0;
+            var horizonStatesList = GetHorizonStatesList(_state, horizon);
 
-            for (int i = 0; i < SIZE; ++i)
+            for (int i = 0; i < _horizonSize; ++i)
             {
-                result.Add(new List<Double>(horizon[i]));
+                horizonValue -= i*Math.Pow(_model.GetDiscrepancy(horizonStatesList[i]), 2);
             }
 
-            for (int i = 0; i < SIZE; ++i)
+            return horizonValue;
+        }
+
+        private List<List<Double>> ModifyHorizon(List<List<Double>> horizon)
+        {
+            var modifiedHorizon = new List<List<Double>>();
+            int ControlVariablesNr = (horizon[0]).Count;
+
+            for (int i = 0; i < _horizonSize; ++i)
             {
-                for (int j = 0; j < SIZE2; ++j)
+                modifiedHorizon.Add(new List<Double>(horizon[i]));
+
+                for (int j = 0; j < ControlVariablesNr; ++j)
                 {
-                    result[i][j] = Math.Abs(result[i][j] + _sigma * GetGaussian());
+                    modifiedHorizon[i][j] = Math.Abs(horizon[i][j] + _sigma * GetGaussian());
                 }
             }
 
-            return result;
+            return modifiedHorizon;
         }
 
         private bool IsFinished()
@@ -197,9 +185,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
                 _sigma *= C2;
                 return;
             }
-            _phi = 0;
-            
-            return; // == 1.5
+            _phi = 0; // == 1.5
         }
 
         private readonly Random _rand = new Random(); //reuse this if you are generating many
@@ -217,23 +203,20 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
 
         #endregion EvoAlg
 
-        private List<Double> GetFinalState(IEnumerable<double> initialState, IEnumerable<List<double>> horizon)
+        private List<Double> GetFinalState(List<double> initialState, IEnumerable<List<double>> horizon)
         {
-            var state = new List<Double>(initialState);
-            foreach (var c in horizon)
-            {
-                state = RungeKuttha(state, c);
-            }
-            return state;
+            //var state = new List<Double>(initialState);
+            //state = horizon.Aggregate(state, RungeKuttha);
+            return horizon.Aggregate(initialState, RungeKuttha); ;
         }
 
         private List<List<Double>> GetHorizonStatesList(IEnumerable<double> initialState, IEnumerable<List<double>> horizon)
         {
             var state = new List<Double>(initialState);
             var stateList = new List<List<Double>>();
-            foreach (var c in horizon)
+            foreach (var controlValues in horizon)
             {
-                state = RungeKuttha(state, c);
+                state = RungeKuttha(state, controlValues);
 
                 stateList.Add(new List<Double>(state));
             }

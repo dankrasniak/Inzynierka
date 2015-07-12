@@ -16,6 +16,7 @@
             <MenuItem Header="_Krok" Margin="0,1,0,0" Command="{Binding StepButton}"/>
             <MenuItem Header="_Zatrzymaj" Margin="0,1,0,0" Command="{Binding StopButton}"/>
             <MenuItem Header="_Uruchom" Margin="0,1,0,0" Command="{Binding PlayButton}"/>
+            <MenuItem Header="_Co 10ty krok" Margin="0,1,0,0" Command="{Binding FasterButton}"/>
         </Menu>
         <Grid Margin="0,52,0,23">
             <Grid.RowDefinitions>
