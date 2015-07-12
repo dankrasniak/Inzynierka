@@ -1,17 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿using System.Windows;
 
 namespace Inzynierka.View
 {
@@ -37,6 +24,15 @@ namespace Inzynierka.View
             ns.DataContext = this.DataContext;
             ns.Owner = this;
             ns.Show();
+        }
+
+        protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+        {
+            foreach (Window el in OwnedWindows)
+            {
+                el.Close();
+            }
+            base.OnClosing(e);
         }
     }
 }

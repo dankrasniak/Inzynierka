@@ -1,4 +1,4 @@
-﻿namespace Inzynierka.Model.Model
+﻿namespace Inzynierka.Model.ControlAlgorithm
 {
     public interface IAlgorithm
     {

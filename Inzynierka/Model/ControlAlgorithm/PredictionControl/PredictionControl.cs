@@ -1,9 +1,8 @@
-﻿using System.Data;
-using System.Linq;
-using Inzynierka.Model.Logger;
+﻿using Inzynierka.Model.Logger;
 using Inzynierka.Model.Model;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
 {
@@ -12,7 +11,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
         private readonly LogIt _logger;
 
         private readonly IModel _model;
-        private readonly List<Double> _state;
+        private List<Double> _state;
         private List<List<Double>> _horizon;
         private readonly int _horizonSize;
         private double H_STEP_SIZE = 0.001; // TODO Verify
@@ -21,15 +20,15 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
         {
             _logger = new LogIt("", loggedValues); // TODO Add Path
 
-            _model = model;
-            _state = _model.GetInitialState();
-            GenerateHorizon();
-
             // Variables from properties list
             H_STEP_SIZE = Convert.ToDouble(properties.Find(p => p.Name.Equals("H_STEP")).Value);
             M = (int) Convert.ToDouble(properties.Find(p => p.Name.Equals("M")).Value);
             _startSigma = Convert.ToDouble(properties.Find(p => p.Name.Equals("StartSigma")).Value);
             _horizonSize = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("Horizon")).Value);
+
+            _model = model;
+            _state = _model.GetInitialState();
+            GenerateHorizon();
         }
 
         private void GenerateHorizon()
@@ -48,13 +47,15 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             _logger.Log("Wartość wejściowa", 
                 controlVariables.Aggregate("", (current, t) => current + (FormatDouble(t) + " ")));
 
-            var nextState = RungeKuttha(_state, controlVariables);
+            _state = RungeKuttha(_state, controlVariables);
+            /* // TODO Delete? Czy tak powinno się robić?
             var STATE_VAR_COUNT = nextState.Count;
 
             for (int i = 0; i < STATE_VAR_COUNT; ++i)
             {
                 _state[i] = nextState[i];
             }
+            */
 
             _logger.Log("stateVariables", 
                 _state.Aggregate("", (s, d) => s + FormatDouble(d) + " ")); // TODO

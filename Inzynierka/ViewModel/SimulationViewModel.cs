@@ -1,4 +1,5 @@
-﻿using Inzynierka.Model.ControlAlgorithm.PredictionControl;
+﻿using Inzynierka.Model.ControlAlgorithm;
+using Inzynierka.Model.ControlAlgorithm.PredictionControl;
 using Inzynierka.Model.Model;
 using System;
 using System.Threading;

@@ -1,8 +1,7 @@
-﻿using System.Linq;
-using Inzynierka.Model;
-using Inzynierka.Model.ControlAlgorithm;
+﻿using Inzynierka.Model.ControlAlgorithm;
 using Inzynierka.Model.Model;
 using Inzynierka.ViewModel;
+using System.Linq;
 using System.Windows;
 
 namespace Inzynierka.View

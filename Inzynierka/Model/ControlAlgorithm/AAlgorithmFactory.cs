@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Dynamic;
-using Inzynierka.Model.Logger;
+﻿using Inzynierka.Model.Logger;
 using Inzynierka.Model.Model;
+using System.Collections.Generic;
 
 namespace Inzynierka.Model.ControlAlgorithm
 {

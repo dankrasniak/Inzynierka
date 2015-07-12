@@ -1,13 +1,10 @@
-﻿using System.Windows.Navigation;
-using Inzynierka.Model.ControlAlgorithm;
+﻿using Inzynierka.Model.ControlAlgorithm;
 using Inzynierka.Model.ControlAlgorithm.PredictionControl;
 using Inzynierka.Model.Model;
 using Inzynierka.Model.Model.Pendulum;
 using Inzynierka.Model.Model.PoliReactor;
 using System;
 using System.Collections.Generic;
-using System.Windows.Input;
-using Inzynierka.View;
 
 namespace Inzynierka.ViewModel
 {
