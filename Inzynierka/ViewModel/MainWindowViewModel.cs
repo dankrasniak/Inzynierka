@@ -1,4 +1,5 @@
 ﻿using Inzynierka.Model.ControlAlgorithm;
+using Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning;
 using Inzynierka.Model.ControlAlgorithm.PredictionControl;
 using Inzynierka.Model.Model;
 using Inzynierka.Model.Model.Pendulum;
@@ -95,7 +96,8 @@ namespace Inzynierka.ViewModel
 
             Algorithms = new List<AAlgorithmFactory>()
             {
-                new PredictionControlFactory()
+                new PredictionControlFactory(),
+                new ModelPredictiveReinforcementLearningFactory()
             };
             Models = new List<AModelFactory>
             {

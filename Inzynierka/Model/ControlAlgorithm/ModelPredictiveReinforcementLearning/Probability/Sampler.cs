@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.Probability
+namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning.Probability
 {
     public interface INormalSampler
     {

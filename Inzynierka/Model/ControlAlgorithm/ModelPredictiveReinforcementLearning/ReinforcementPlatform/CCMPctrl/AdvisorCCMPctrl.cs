@@ -1,20 +1,22 @@
-﻿using System;
+﻿using System.Collections.Generic;
+using System.Windows.Documents;
+using Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning.Computing;
+using Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning.Neural;
+using Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning.Probability;
+using Inzynierka.Model.Logger;
+using Inzynierka.Model.Model;
+using System;
 using System.Collections;
-using Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.Computing;
-using Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.Neural;
-using Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.Probability;
 
-namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.ReinforcementPlatform.CCMPctrl
+namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning.ReinforcementPlatform.CCMPctrl
 {
-	/// <summary>
-	/// Summary description for Advisor.
-	/// </summary>
-    public class Advisor //: Reinforcement.CCAdvisor
+    public class Advisor : IAlgorithm //: Reinforcement.CCAdvisor
     {
         protected MLPerceptron2 V;    // aproksymator funkcji V
         protected Vector Vval;        // wektor zwracany przez ten aproksymator 
         protected Vector Vgrad;       // gradient na wyjściu aproksymatora V
         protected double betaV;       // parametr kroku dla tego aproksymatora 
+        protected Vector VparamGrad; 
 
         #region parametry 
         protected int HORIZON_SIZE;    // długość horyzontu
@@ -35,14 +37,39 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.R
         protected Vector[] NextStates; // następne stany na horyzoncie 
         protected double Vest;         // bieżąca ocena sterowań Actions 
 
+        #region Ad. Biblioteka Programowa
+
+        private IModel _model;
+        private LogIt _logger;
+        #endregion
+
         public Advisor()
 		{
 			TimeIndex = 0;
 			AllVisits = new ArrayList(); 
 			Sampler = new ASampler(); 
+
+            throw new NotImplementedException();
 		}
 
-        // CO TO SĄ ZA ZMIENNE STATE_STDDEV? STATE_STANDARD_DEVIATION????
+	    public Advisor(IModel model, List<Property> properties, List<LoggedValue> loggedValues)
+	    {
+            _model = model;
+
+            HORIZON_SIZE = (int) Convert.ToDouble(properties.Find(p => p.Name.Equals("Horizon")).Value);
+
+            TimeIndex = 0;
+            AllVisits = new ArrayList();
+            Sampler = new ASampler();
+
+            State = new Vector(_model.GetInitialState().ToArray());
+            MinAction = new Vector(1, 0.0); // TODO Assess the values
+            MaxAction = new Vector(1, 1000); // TODO Assess the values
+
+	    }
+
+        // state_av - average value?
+        // state_stddev - standard deviation?
         public void Init(double[] state_av, double[] state_stddev,
             double[] action_min, int vsize, double discount)
         {
@@ -62,7 +89,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.R
 
             Gamma = discount;
 
-            HORIZON_SIZE = 10;  // TODO powinno przyjść z zewnątrz 
+//            HORIZON_SIZE = 10;  // TODO powinno przyjść z zewnątrz 
             Actions = new Vector[HORIZON_SIZE];
             NextStates = new Vector[HORIZON_SIZE];
             for (int i = 0; i < HORIZON_SIZE; i++)
@@ -129,8 +156,9 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.R
                 // Get the state value from the approximator & add calculated discrepancy to its weights(NN).
                 V.Approximate(Visit.State, ref Vval);
                 Vgrad[0] = Vval[0] - Vest; // TODO Czemu tylko [0]???
+                V.BackPropagateGradient(Vgrad, ref VparamGrad);
                 
-                V.AddToWeights(Vgrad, -betaV); // TODO zwróci błąd?
+                V.AddToWeights(VparamGrad, -betaV); // TODO zwróci błąd?
             }
         }
 
@@ -189,6 +217,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.R
             var newNextStates = new Vector[HORIZON_SIZE];
 
             #region Modify the Action vector
+
             for (int i = 0; i < HORIZON_SIZE; i++)
             {
                 modifiedActions[i] = currentActions[i].Clone();

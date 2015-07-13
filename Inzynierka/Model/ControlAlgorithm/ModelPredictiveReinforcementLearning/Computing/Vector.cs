@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.Computing
+namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning.Computing
 {
     public interface IVector
     {

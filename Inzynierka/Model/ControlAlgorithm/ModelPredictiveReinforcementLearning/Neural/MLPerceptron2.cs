@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
-using Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.Computing;
+using Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning.Computing;
 
 
-namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.Neural
+namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning.Neural
 {
     public class MLPerceptron2
     {
@@ -83,7 +83,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.N
             public void Build(int in_dim, CellType act_type, int out_dim)
             {
                 Input = new Vector(in_dim + 1);
-                Input[in_dim] = 1;
+                Input[in_dim] = 1; // TODO WHY? SAU
                 dL_dInput = new Vector(in_dim + 1);
                 Weights = new Matrix(out_dim, in_dim + 1);
                 dL_dWeights = new Matrix(out_dim, in_dim + 1);
@@ -355,7 +355,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.N
             if (arguments == null || arguments.Dimension != Input.Dimension)
                 throw new Exception(this.GetType().ToString() + ".SetInput");
 
-            // TODO WHY??
+            // TODO WHY?? SAU
             Input = arguments - InputAverage; // w C++ szybciej bedzie: Input.SetDifference(arguments, InputAverage); 
             Input = Input & InputInvStddev; // w C++ szybciej bedzie: Input.SetProducts(Input, InputInvStddev);
         }

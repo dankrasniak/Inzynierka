@@ -1,6 +1,6 @@
-﻿using Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.Computing;
+﻿using Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning.Computing;
 
-namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.ReinforcementPlatform.CCMPctrl
+namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning.ReinforcementPlatform.CCMPctrl
 {
     #region Visit
     public class AVisit

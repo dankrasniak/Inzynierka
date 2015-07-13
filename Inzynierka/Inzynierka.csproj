@@ -133,14 +133,15 @@
     </ApplicationDefinition>
     <Compile Include="Model\ControlAlgorithm\AAlgorithmFactory.cs" />
     <Compile Include="Model\ControlAlgorithm\IAlgorithm.cs" />
-    <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcentLearning\Computing\Matrix.cs" />
-    <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcentLearning\Computing\MatrixToolbox.cs" />
-    <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcentLearning\ReinforcementPlatform\CCMPctrl\AdvisorCCMPctrl-Visit.cs" />
-    <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcentLearning\ReinforcementPlatform\CCMPctrl\AdvisorCCMPctrl.cs" />
-    <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcentLearning\Computing\Vector.cs" />
-    <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcentLearning\Neural\CellSet.cs" />
-    <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcentLearning\Neural\MLPerceptron2.cs" />
-    <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcentLearning\Probability\Sampler.cs" />
+    <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcementLearning\Computing\Matrix.cs" />
+    <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcementLearning\Computing\MatrixToolbox.cs" />
+    <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcementLearning\ModelPredictiveReinforcementLearningFactory.cs" />
+    <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcementLearning\ReinforcementPlatform\CCMPctrl\AdvisorCCMPctrl-Visit.cs" />
+    <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcementLearning\ReinforcementPlatform\CCMPctrl\AdvisorCCMPctrl.cs" />
+    <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcementLearning\Computing\Vector.cs" />
+    <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcementLearning\Neural\CellSet.cs" />
+    <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcementLearning\Neural\MLPerceptron2.cs" />
+    <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcementLearning\Probability\Sampler.cs" />
     <Compile Include="Model\ControlAlgorithm\PredictionControl\PredictionControlFactory.cs" />
     <Compile Include="Model\Logger\LoggedValue.cs" />
     <Compile Include="Model\Model\AModelFactory.cs" />

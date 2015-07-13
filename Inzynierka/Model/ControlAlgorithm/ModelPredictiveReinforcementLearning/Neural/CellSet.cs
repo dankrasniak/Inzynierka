@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
-using Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.Probability;
+using Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning.Probability;
 
-namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcentLearning.Neural
+namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning.Neural
 {
     public enum CellType
     {
