@@ -116,5 +116,10 @@ namespace Inzynierka.Model.Model.Pendulum
         {
             return _initialState;
         }
+
+        public Boolean IsStateAcceptable(List<Double> state)
+        {
+            return (state[0] > -100) && (state[0] < 100); // TODO Actual variables
+        }
     }
 }

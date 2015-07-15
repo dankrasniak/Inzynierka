@@ -15,5 +15,9 @@ namespace Inzynierka.Model.Model
         Double GetDiscrepancy(List<Double> stateVariables);
 
         List<Double> GetInitialState();
+
+        Boolean IsStateAcceptable(List<Double> state);
+
+        Boolean IsFirstBetter(List<Double> state1, List<Double> state2); // TODO Delete TMP
     }
 }

@@ -19,7 +19,7 @@ namespace Inzynierka.Model.Model.PoliReactor
                 Convert.ToDouble(properties.Find(p => p.Name.Equals("S0V3")).Value),
                 Convert.ToDouble(properties.Find(p => p.Name.Equals("S0V4")).Value)
             };
-            _commandingValue = (double) properties.Find(p => p.Name.Equals("CommandingValue")).Value;
+            _commandingValue = Convert.ToDouble(properties.Find(p => p.Name.Equals("CommandingValue")).Value);
         }
 
         public List<Double> StateFunction2(List<Double> stateVariables, List<Double> controlVariables)
@@ -107,6 +107,11 @@ namespace Inzynierka.Model.Model.PoliReactor
         public List<Double> GetInitialState()
         {
             return _initialState;
+        }
+
+        public Boolean IsStateAcceptable(List<Double> state)
+        {
+            return true; //GetValue(state) >= 0; TODO
         }
     }
 }

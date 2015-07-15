@@ -49,7 +49,7 @@ namespace Inzynierka.ViewModel
             StepButton = new ButtonCommand(
                 () =>
                 { // Step of a simulation
-                    Value = ((PredictionControl) Algorithm).GetValueTMP();
+                    Value = Algorithm.GetValueTMP();
                     OnPropertyChanged("Value");
                 },
                 () =>
@@ -109,22 +109,21 @@ namespace Inzynierka.ViewModel
             {
                 while (Loop)
                 {
-                    Value = ((PredictionControl) Algorithm).GetValueTMP();
+                    Value = Algorithm.GetValueTMP();
                     OnPropertyChanged("Value");
                 }
                 while (Faster)
                 {
-
-                    ((PredictionControl)Algorithm).GetValueTMP();
-                    ((PredictionControl)Algorithm).GetValueTMP();
-                    ((PredictionControl)Algorithm).GetValueTMP();
-                    ((PredictionControl)Algorithm).GetValueTMP();
-                    ((PredictionControl)Algorithm).GetValueTMP();
-                    ((PredictionControl)Algorithm).GetValueTMP();
-                    ((PredictionControl)Algorithm).GetValueTMP();
-                    ((PredictionControl)Algorithm).GetValueTMP();
-                    ((PredictionControl)Algorithm).GetValueTMP();
-                    Value = ((PredictionControl) Algorithm).GetValueTMP();
+                    Algorithm.GetValueTMP();
+                    Algorithm.GetValueTMP();
+                    Algorithm.GetValueTMP();
+                    Algorithm.GetValueTMP();
+                    Algorithm.GetValueTMP();
+                    Algorithm.GetValueTMP();
+                    Algorithm.GetValueTMP();
+                    Algorithm.GetValueTMP();
+                    Algorithm.GetValueTMP();
+                    Value = Algorithm.GetValueTMP();
                     OnPropertyChanged("Value");
                 }
                 System.Threading.Thread.Sleep(1000);

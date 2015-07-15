@@ -18,7 +18,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
             Description = "Opis algorytmu uczenia maszynowego wykorzystującego sterowanie predykcyjnege.";
 
             Properties = new List<Property>();
-            Properties.Add(new Property("Horizon", 20, "Długość horyzontu", 0.00001, 20000.0));
+            Properties.Add(new Property("Horizon", 10, "Długość horyzontu", 0.00001, 20000.0));
 
             LoggedValues = new List<LoggedValue>();
             LoggedValues.Add(new LoggedValue(Name, "Wartość wyjściowa", true));
@@ -28,7 +28,6 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
 
         public override IAlgorithm CreateAlgorithm(IModel model, List<Property> properties, List<LoggedValue> loggedValues)
         {
-            throw new System.NotImplementedException();
             return new Advisor(model, properties, loggedValues);
         }
     }

@@ -343,8 +343,8 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
             {
                 Matrix mat = Layer[l].Weights;
                 int msize = mat.Height * mat.Width;
-                MatrixToolbox.AddScaledSubVector2Matrix(ref mat, vect, k, scalar); // TODO BŁĄD
-                k += msize; // TODO ???????????
+                MatrixToolbox.AddScaledSubVector2Matrix(ref mat, vect, k, scalar);
+                k += msize;
             }
         }
         #endregion
@@ -355,7 +355,6 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
             if (arguments == null || arguments.Dimension != Input.Dimension)
                 throw new Exception(this.GetType().ToString() + ".SetInput");
 
-            // TODO WHY?? SAU
             Input = arguments - InputAverage; // w C++ szybciej bedzie: Input.SetDifference(arguments, InputAverage); 
             Input = Input & InputInvStddev; // w C++ szybciej bedzie: Input.SetProducts(Input, InputInvStddev);
         }

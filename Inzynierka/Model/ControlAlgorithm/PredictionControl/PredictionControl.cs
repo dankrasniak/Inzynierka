@@ -83,11 +83,9 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
         private const double C2 = 1.2;
         private const double SigmaMin = 0.0001;
 
-        // Standard deviation
-        private double _sigma;
-        private readonly double _startSigma = 0.001; // TODO
-        // Number of times the child specimen was chosen over the parent specimen in the last cicle of M iterations
-        private int _phi;
+        private double _sigma; // Standard deviation
+        private readonly double _startSigma;
+        private int _phi; // Number of times the child specimen was chosen over the parent specimen in the last cicle of M iterations
         private int _iterationNum;
 
         private void PrepareHorizont()
@@ -108,17 +106,6 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
         private void NextIteration()
         {
             var modifiedHorizon = ModifyHorizon(_horizon);
-            
-            /*
-            var currentHorizonState = GetFinalState(_state, _horizon);
-            var newHorizonState = GetFinalState(_state, tmpHorizon);
-            _logger.Log("Possible states", "Possible states: " + FormatDouble(currentHorizonValue) + " VS: " + FormatDouble(newHorizonValue));
-
-            if (!_model.IsFirstBetter(currentHorizonState, newHorizonState))
-                _horizon = tmpHorizon;
-             */
-
-            #region tmp
 
             var currentHorizonValue = GetHorizonValue(_horizon);
             var newHorizonValue = GetHorizonValue(modifiedHorizon);
@@ -128,7 +115,24 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             if (currentHorizonValue <= newHorizonValue)
                 _horizon = modifiedHorizon;
 
-            #endregion tmp
+            UpdateSigma();
+        }
+
+        private void NextIteration2()
+        {
+
+            var modifiedHorizon = ModifyHorizon(_horizon);
+
+            var currentHorizonState = GetFinalState(_state, _horizon);
+            var newHorizonState = GetFinalState(_state, modifiedHorizon);
+
+            var currentHorizonValue = _model.GetDiscrepancy(currentHorizonState);
+            var newHorizonValue = _model.GetDiscrepancy(newHorizonState);
+
+            _logger.Log("Possible states", "Possible states: " + FormatDouble(currentHorizonValue) + " VS: " + FormatDouble(newHorizonValue));
+
+            if (!_model.IsFirstBetter(currentHorizonState, newHorizonState))
+                _horizon = modifiedHorizon;
 
             UpdateSigma();
         }
@@ -228,6 +232,12 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
         {
             _horizon.RemoveAt(0);
             _horizon.Add(_horizon[_horizonSize - 2]); // (_model.GenerateControlVariables()); // TODO
+        }
+
+        private void UpdateHorizon2()
+        {
+            _horizon.RemoveAt(0);
+            _horizon.Add(_model.GenerateControlVariables());
         }
 
         private List<Double> RungeKuttha(List<Double> stateVariables, List<Double> controlVariables)
