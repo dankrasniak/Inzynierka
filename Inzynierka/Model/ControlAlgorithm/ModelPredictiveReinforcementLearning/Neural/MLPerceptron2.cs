@@ -238,7 +238,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
 
         public void InitWeights(double std_dev)
         {
-            for (int l = 0; l < Layer.Length - 1; l++)
+            for (int l = 0; l < Layer.Length - 1; l++) // TODO Niepotrzebnie robiona jest każda waga, skoro na końcu ostatnie są zerowane
             {
                 var weights = Layer[l].Weights;
                 for (int i = 0; i < weights.Height; i++)
@@ -394,10 +394,12 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
         public void BackPropagateGradient(Vector out_gradient, ref Vector weight_gradient)
         {
             int out_dim = this.OutDimension;
+
             if (out_gradient.Dimension != out_dim)
                 throw new Exception(this.GetType().ToString() + ".BackPropagateGradient");
             if (dL_dOutput != out_gradient)
                 dL_dOutput.InsertPart(0, out_dim, out_gradient, 0);
+
             BackPropagateGradient();
             Vector.AssureDimension(ref weight_gradient, WeightsCount);
             int k = 0;

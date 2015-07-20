@@ -74,7 +74,7 @@ namespace Inzynierka.Model.Model.PoliReactor
 
             /* New Cm */ result[0] = (-(kp + kfm)*Cm*P0 + F*(Cmin - Cm)/V);
 
-            /* New C1 */ result[1] = (-kI*C1 + (controlVariables[0]*Clin - F*C1)/V);
+            /* New C1 */ result[1] = (-kI * C1 + (controlVariables[0] * Clin - F * C1) / V); // (controlVariables[0] * 80.0  -10.10225 * C1);
 
             /* New D0 */ result[2] = ((0.5*kTc + kTd)*P0*P0 + kfm*Cm*P0 - F*D0/V);
 
@@ -90,7 +90,7 @@ namespace Inzynierka.Model.Model.PoliReactor
 
         public Double GetDiscrepancy(List<Double> stateVariables)
         {
-            return Math.Abs(_setpoint - GetValue(stateVariables));
+            return Math.Abs(_setpoint - GetValue(stateVariables)); // TODO Czy musi być Abs
         }
 
         public Boolean IsFirstBetter(List<Double> state1, List<Double> state2) // TODO Delete

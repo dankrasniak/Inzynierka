@@ -197,13 +197,18 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
 
         private double GetGaussian() // TODO Verify
         {
-            double u1 = _rand.NextDouble(); //these are uniform(0,1) random doubles
-            double u2 = _rand.NextDouble();
-            double randStdNormal = Math.Sqrt(-2.0 * Math.Log(u1)) *
-                         Math.Sin(2.0 * Math.PI * u2); //random normal(0,1)
-            //double randNormal =
-            //             mean + stdDev * randStdNormal; //random normal(mean,stdDev^2)
-            return randStdNormal;
+//            double u1 = _rand.NextDouble(); //these are uniform(0,1) random doubles
+//            double u2 = _rand.NextDouble();
+//            double randStdNormal = Math.Sqrt(-2.0 * Math.Log(u1)) *
+//                         Math.Sin(2.0 * Math.PI * u2); //random normal(0,1)
+//            //double randNormal =
+//            //             mean + stdDev * randStdNormal; //random normal(mean,stdDev^2)
+//            return randStdNormal;
+
+            double z = -Math.Log(1.0 - _rand.NextDouble());
+            double alpha = _rand.NextDouble() * Math.PI * 2;
+            double norm = Math.Sqrt(z * 2) * Math.Cos(alpha);
+            return norm * 1.0;
         }
 
         #endregion EvoAlg

@@ -7,9 +7,9 @@ namespace Inzynierka.Model.Model.Pendulum
     public class Pendulum : IModel
     {
         public static string Name = "Pendulum";
-        private List<Double> _initialState = new List<Double>() { 0.0, 0.0 };
-        private Double _setpoint = 0.0;
-        private Double _commandingValue = 0.0;
+        private List<Double> _initialState;
+        private Double _setpoint;
+        private Double _commandingValue;
 
         public Pendulum(List<Property> properties)
         {
@@ -88,6 +88,12 @@ namespace Inzynierka.Model.Model.Pendulum
             var x = OldX + h * xp + 0.5 * h * h * xpp;
 
             //throw new NotImplementedException(); // TODO
+
+            stateVariables[0] = x;
+            stateVariables[1] = O;
+            stateVariables[2] = xp;
+            stateVariables[3] = Op;
+
             return stateVariables;
         }
 

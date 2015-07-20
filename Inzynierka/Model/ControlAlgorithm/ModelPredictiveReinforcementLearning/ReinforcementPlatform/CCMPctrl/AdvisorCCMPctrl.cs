@@ -16,20 +16,20 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
         protected MLPerceptron2 V;    // aproksymator funkcji V
         protected Vector Vval;        // wektor zwracany przez ten aproksymator 
         protected Vector Vgrad;       // gradient na wyjściu aproksymatora V
-        protected double betaV;       // parametr kroku dla tego aproksymatora 
+        protected double BetaV;       // parametr kroku dla tego aproksymatora 
         protected Vector VparamGrad; 
 
         #region parametry 
         protected readonly int HORIZON_SIZE;    // długość horyzontu
         protected readonly int Vsize;           // wielkość sieci neuronowej V
         protected double Gamma;        // dyskonto 
-        protected Vector MinAction;    // min sterowania 
-        protected Vector MaxAction;    // max sterowania 
+        protected readonly Vector MinAction;    // min sterowania 
+        protected readonly Vector MaxAction;    // max sterowania 
         protected const double H_STEP_SIZE = 0.001;
         #endregion 
 
         protected int TimeIndex;       // indeks czasowy bieżącego zdarzenia 
-        protected ArrayList AllVisits; // wszystkie dotychczasowe zdarzenia 
+        protected readonly ArrayList AllVisits; // wszystkie dotychczasowe zdarzenia 
         protected AVisit Visit;        // zdarzenie wylosowane
 
 		protected readonly ASampler Sampler;      // służy do losowania 
@@ -43,15 +43,22 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
 
         protected readonly IModel _model;
         protected LogIt _logger;
+        protected double StartingActionsValue;
+        protected readonly double Sigma;
         #endregion
 
 	    public Advisor(IModel model, List<Property> properties, List<LoggedValue> loggedValues)
 	    {
             _model = model;
 
-            HORIZON_SIZE = (int) Convert.ToDouble(properties.Find(p => p.Name.Equals("Horizon")).Value);
+            HORIZON_SIZE = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("Horizon")).Value);
+            Vsize = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("Neural Network Layers Number")).Value);
+            BetaV = Convert.ToDouble(properties.Find(p => p.Name.Equals("Scalar")).Value);
+            Gamma = Convert.ToDouble(properties.Find(p => p.Name.Equals("Discount")).Value);
+            StartingActionsValue = Convert.ToDouble(properties.Find(p => p.Name.Equals("CommandingValue")).Value);
+	        Sigma = Convert.ToDouble(properties.Find(p => p.Name.Equals("Sigma")).Value);
 
-            //_logger = new LogIt("", loggedValues);
+            _logger = new LogIt("", loggedValues);
 
             TimeIndex = 0;
             AllVisits = new ArrayList();
@@ -61,66 +68,56 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
             MinAction = new Vector(1, 0.0); // TODO Assess the values
             MaxAction = new Vector(1, 0.1); // TODO Assess the values
 
-	        double[] stateAverage = {0.0, 0.0, 0.0, 0.0};
-	        double[] stateStandardDeviation = {1.0, 1.0, 1.0, 1.0};
-	        const double discount = 0.8;
-	        Vsize = 5;
+            double[] stateAverage = { 0.0, 0.0, 0.0, 0.0 };// TODO Assess the values
+            double[] stateStandardDeviation = { 1.0, 1.0, 1.0, 1.0 };// TODO Assess the values
 
-            Init(stateAverage, stateStandardDeviation, MinAction.Table, Vsize, discount);
-
+            Init(stateAverage, stateStandardDeviation, MinAction.Table, Vsize);
 	    }
 
         /// <returns>The value returned by the model.</returns>
         public Double GetValueTMP() 
         {
             var currentAction = _model.GenerateControlVariables().ToArray();
+
             AdviseAction(ref currentAction);
             ThisHappened(RungeKuttha(State.Table.ToList(), currentAction.ToList()).ToArray());
+            //ThisHappened(_model.StateFunction(State.Table.ToList(), currentAction.ToList()).ToArray());
 
             return _model.GetValue(State.Table.ToList());
         }
 
-        /// <summary>
-        /// Prepares the model for the next epizode. The Approximator stays unchanged.
-        /// </summary>
+        /// <summary>Prepares the model for the next epizode. The Approximator stays unchanged.</summary>
         public void NextEpisode()
         {
-            
+            TimeIndex = 0;
+            StartInState(_model.GetInitialState().ToArray());
         }
 
-        // state_av - average value?
-        // state_stddev - standard deviation?
-        public void Init(double[] state_av, double[] state_stddev,
-            double[] action_min, int vsize, double discount)
+        public void Init(double[] stateAv, double[] stateStddev, double[] actionMin, int vsize)
         {
-            int StateDim = state_av.GetLength(0);
-            int ActionDim = action_min.GetLength(0);
+            int stateDim = stateAv.GetLength(0);
+            int actionDim = actionMin.GetLength(0);
+
 
             #region budowa sieci neuronowej
 
             V = new MLPerceptron2();
-            V.Build(StateDim, CellType.Arcustangent, new int[] { vsize, 1 });
-            V.SetInputDescription(new Vector(state_av), new Vector(state_stddev));
+            V.Build(stateDim, CellType.Arcustangent, new int[] { vsize, 1 });
+            V.SetInputDescription(new Vector(stateAv), new Vector(stateStddev));
             V.InitWeights(1.0/Math.Sqrt(vsize+1));
             Vval = new Vector(1);
             Vgrad = new Vector(1);
 
             #endregion koniec budowy sieci neuronowej
 
-            Gamma = discount;
 
             Actions = new Vector[HORIZON_SIZE];
             NextStates = new Vector[HORIZON_SIZE];
             for (int i = 0; i < HORIZON_SIZE; i++)
             {
-                Actions[i] = new Vector(ActionDim, 0.0);
-                NextStates[i] = new Vector(StateDim, 0.0); 
+                Actions[i] = new Vector(actionDim, StartingActionsValue);
+                NextStates[i] = new Vector(stateDim, 0.0); 
             }
-        }
-
-        public void SetParameters(double v_stepsize)
-        {
-            betaV = v_stepsize; 
         }
 
 		// początek epizodu sterowania 
@@ -135,7 +132,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
 		{
             Vest = CalculateStateValue(State, Actions, ref NextStates); 
             for (int i = 0; i < 10; i++) // kilka poprawek
-                AdjustActions(State, 1, ref Actions, ref NextStates, ref Vest);
+                AdjustActions(State, Sigma, ref Actions, ref NextStates, ref Vest);// / (Sigma + i)
 
             AllVisits.Add(new AVisit(TimeIndex++, State, Actions, NextStates)); 
             action = Actions[0].Table; 
@@ -164,35 +161,34 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
 
                 // Try to Adjust its actions
                 for (int i = 0; i < 10; i++) // kilka poprawek
-                    AdjustActions(Visit.State, 1, ref Visit.Actions, ref Visit.NextStates, ref Vest);
+                    AdjustActions(Visit.State, Sigma, ref Visit.Actions, ref Visit.NextStates, ref Vest);///(Sigma+i)
 
-                // TODO EXPLAIN
                 // Get the state value from the approximator & add calculated discrepancy to its weights(NN).
                 V.Approximate(Visit.State, ref Vval);
                 Vgrad[0] = Vval[0] - Vest;
                 V.BackPropagateGradient(Vgrad, ref VparamGrad);
                 
-                V.AddToWeights(VparamGrad, -betaV);
+                V.AddToWeights(VparamGrad, -BetaV);
             }
         }
 
         #region Model
         protected bool ModelIsStateAcceptable(Vector state)
         {
-            return _model.IsStateAcceptable(state.Table.ToList());
+            return _model.IsStateAcceptable(state.Table.ToList()); // TODO
         }
 
-        protected double ModelReward(Vector next_state)
+        protected double ModelReward(Vector nextState)
         {
-            if (ModelIsStateAcceptable(next_state))
-                return (-1) * Math.Pow(_model.GetDiscrepancy(next_state.Table.ToList()), 2);
+            if (ModelIsStateAcceptable(nextState))
+                return (-1) * Math.Pow(_model.GetDiscrepancy(nextState.Table.ToList()), 2);
             return 0; 
         }
 
         protected Vector ModelNextState(Vector state, Vector action)
         {
-            //throw new NotImplementedException("ModelNextState");
             return new Vector(RungeKuttha(state.Table.ToList(), action.Table.ToList()).ToArray());
+            //return  new Vector(_model.StateFunction(state.Table.ToList(), action.Table.ToList()).ToArray());
         }
 
         #region Predictive Control
@@ -251,6 +247,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
                 if (!ModelIsStateAcceptable(stateTmp))
                     return value; 
                 value += gammai * ModelReward(stateTmp);
+                
                 gammai *= Gamma; 
             }
 
@@ -273,10 +270,13 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
             {
                 modifiedActions[i] = currentActions[i].Clone();
                 // < MinAction ; _action + Rand ; MaxAction >
-                for (int j = 0; j < modifiedActions[i].Dimension; j++) // MinAction and MaxAction never set
+                for (int j = 0; j < modifiedActions[i].Dimension; j++)
                 {
+                    //modifiedActions[i][j] = Math.Min(
+                    //    Math.Max(MinAction[j], modifiedActions[i][j] + 0.1*Sampler.SampleFromNormal(0, sigma)/4.0),
+                    //    MaxAction[j]);
                     modifiedActions[i][j] = Math.Min(
-                        Math.Max(MinAction[j], modifiedActions[i][j] + 0.1*Sampler.SampleFromNormal(0, sigma)/4.0),
+                        Math.Max(MinAction[j], modifiedActions[i][j] + Sampler.SampleFromNormal(0, sigma)),
                         MaxAction[j]);
                 }
             }

@@ -25,6 +25,9 @@
                 <RowDefinition />
                 <RowDefinition />
                 <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
+                <RowDefinition />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
@@ -33,11 +36,19 @@
                 <ColumnDefinition/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <Canvas Background="#FFFFFFFF" Margin="10" Grid.ColumnSpan="5" Grid.RowSpan="3">
+            <Canvas Background="#FFFFFFFF" Margin="10" Grid.ColumnSpan="5" Grid.RowSpan="4">
                 <Path Canvas.Left="61" Canvas.Top="28" Width="133" Height="98" Fill="Blue" Stretch="Fill" Data="M61,125 L193,28" StrokeThickness="10"/>
-                <TextBlock Canvas.Left="10" TextWrapping="Wrap" Text="{Binding Value}" Canvas.Top="191" Width="112"/>
             </Canvas>
-            <Border BorderBrush="Black" BorderThickness="1" Grid.ColumnSpan="5" Grid.Column="0" Grid.Row="3" Grid.RowSpan="2"/>
+            <Label Content="Wartości wyjściowe:" Margin="10" Grid.Row="4" Grid.Column="0"/>
+            <TextBlock TextWrapping="Wrap" Text="{Binding Value}" Margin="10" Grid.Row="5" Grid.Column="0" Foreground="White"/>
+
+            <Label Content="Iteracja: " Margin="10" Grid.Row="4" Grid.Column="1"/>
+            <TextBlock TextWrapping="Wrap" Text="{Binding TimeIndex}" Margin="10" Grid.Row="5" Grid.Column="1" Foreground="White"/>
+
+            <Label Content="Epizod: " Margin="10" Grid.Row="4" Grid.Column="2"/>
+            <TextBlock TextWrapping="Wrap" Text="{Binding EpisodeNumber}" Margin="10" Grid.Row="5" Grid.Column="2" Foreground="White"/>
+
+            <Border BorderBrush="Black" BorderThickness="1" Grid.ColumnSpan="5" Grid.Column="0" Grid.Row="4" Grid.RowSpan="4"/>
             <!--<xctk:RadialGauge Grid.ColumnSpan="3" Grid.Column="1" Grid.Row="0" Grid.RowSpan="4" Padding="0" MajorTickLabelOffset="-40" IsFullCircleBackground="False" Maximum="40000" NumericIndicatorOffsetY="47" RenderTransformOrigin="0,0" StartAngle="-135" StrokeThickness="0" TickMarkOffset="-6" Value="{Binding Value}" EndAngle="135" IsNumericIndicatorVisible="True" MajorTickCount="8" HorizontalAlignment="Left" Width="284" Height="237" VerticalAlignment="Top" Margin="94,10,0,0"/>-->
         </Grid>
         <StatusBar Background="#FF1D1D1D" OpacityMask="Black" Height="23" VerticalAlignment="Bottom"/>

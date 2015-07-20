@@ -18,11 +18,16 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
             Description = "Opis algorytmu uczenia maszynowego wykorzystującego sterowanie predykcyjnege.";
 
             Properties = new List<Property>();
-            Properties.Add(new Property("Horizon", 10, "Długość horyzontu", 0.00001, 20000.0));
+            Properties.Add(new Property("Horizon", 10, "Długość horyzontu", 1, 100));
+            Properties.Add(new Property("Neural Network Layers Number", 35, "Liczba warstw sieci neuronowej.", 1, 1000));
+            Properties.Add(new Property("Scalar", 0.01, "Skalar stosowany przy gradiencie dodawanym do wag sieci neuronowej.", 0.0, 10.0));
+            Properties.Add(new Property("Discount", 0.8, "Wartość dyskonta stosowanego przy funkcji wartości stanu.", 0.0, 1.0));
+            Properties.Add(new Property("CommandingValue", 0.01, "Pierwsza generowana wartość sterująca.", 0.0, 1000));
+            Properties.Add(new Property("Sigma", 0.001, "Wartość odchylenia standardowego.", 0.0, 1000));
 
             LoggedValues = new List<LoggedValue>();
-            LoggedValues.Add(new LoggedValue(Name, "Wartość wyjściowa", true));
-            LoggedValues.Add(new LoggedValue(Name, "Wartość wejściowa", true));
+            LoggedValues.Add(new LoggedValue(Name, "Wartość wyjściowa", false));
+            LoggedValues.Add(new LoggedValue(Name, "Wartość wejściowa", false));
             //LoggedValues.Add(new LoggedValue(Name, , true));
         }
 

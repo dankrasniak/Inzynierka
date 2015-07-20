@@ -23,6 +23,10 @@ namespace Inzynierka.ViewModel
 
         public string TEXT { get; set; }
 
+        public int TimeIndex { get; set; }
+
+        public int EpisodeNumber { get; set; }
+
 
         #region Buttons
 
@@ -30,6 +34,7 @@ namespace Inzynierka.ViewModel
         public ICommand StopButton { get; set; }
         public ICommand PlayButton { get; set; }
         public ICommand FasterButton { get; set; }
+
 
         #endregion Buttons
 
@@ -51,6 +56,8 @@ namespace Inzynierka.ViewModel
                 { // Step of a simulation
                     Value = Algorithm.GetValueTMP();
                     OnPropertyChanged("Value");
+                    ++TimeIndex;
+                    OnPropertyChanged("TimeIndex");
                 },
                 () =>
                 { // Not playing?
@@ -92,6 +99,8 @@ namespace Inzynierka.ViewModel
             );
             #endregion ButtonInitialisation
 
+            TimeIndex = 0;
+
             #region Thread
 
             Value = 0;
@@ -111,6 +120,8 @@ namespace Inzynierka.ViewModel
                 {
                     Value = Algorithm.GetValueTMP();
                     OnPropertyChanged("Value");
+                    ++TimeIndex;
+                    OnPropertyChanged("TimeIndex");
                 }
                 while (Faster)
                 {
@@ -125,6 +136,8 @@ namespace Inzynierka.ViewModel
                     Algorithm.GetValueTMP();
                     Value = Algorithm.GetValueTMP();
                     OnPropertyChanged("Value");
+                    TimeIndex += 10;
+                    OnPropertyChanged("TimeIndex");
                 }
                 System.Threading.Thread.Sleep(1000);
             }

@@ -23,11 +23,11 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             Properties.Add(new Property("M", 10, "Algorytm ewolucyjny, wartość M.", 0.001, 20.0));
 
             LoggedValues = new List<LoggedValue>();
-            LoggedValues.Add(new LoggedValue(Name, "Wartość wyjściowa", true));
-            LoggedValues.Add(new LoggedValue(Name, "stateVariables", true));
-            LoggedValues.Add(new LoggedValue(Name, "horizon", true));
-            LoggedValues.Add(new LoggedValue(Name, "Possible states", true));
-            LoggedValues.Add(new LoggedValue(Name, "Wartość wejściowa", true));
+            LoggedValues.Add(new LoggedValue(Name, "Wartość wyjściowa", false));
+            LoggedValues.Add(new LoggedValue(Name, "stateVariables", false));
+            LoggedValues.Add(new LoggedValue(Name, "horizon", false));
+            LoggedValues.Add(new LoggedValue(Name, "Possible states", false));
+            LoggedValues.Add(new LoggedValue(Name, "Wartość wejściowa", false));
             //LoggedValues.Add(new LoggedValue(Name, , true));
         }
 
