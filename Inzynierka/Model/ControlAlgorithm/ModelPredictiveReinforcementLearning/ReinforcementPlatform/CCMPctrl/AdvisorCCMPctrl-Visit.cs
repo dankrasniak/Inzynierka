@@ -23,8 +23,11 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
                 Actions[i] = actions[i].Clone();
 
             NextStates = new Vector[next_states.Length];
-            for (int i = 0; i < next_states.Length; i++)
-                NextStates[i] = next_states[i].Clone();
+            //for (int i = 0; i < next_states.Length; i++)
+            //    NextStates[i] = next_states[i].Clone();
+            int j = -1;
+            while (++j < next_states.Length && next_states[j] != null)
+                NextStates[j] = next_states[j].Clone();
         }
     }
     #endregion

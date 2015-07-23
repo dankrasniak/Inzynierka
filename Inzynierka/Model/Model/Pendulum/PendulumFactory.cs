@@ -15,12 +15,12 @@ namespace Inzynierka.Model.Model.Pendulum
             Description = "Opis wahadła.";
 
             Properties = new List<Property>();
-            Properties.Add(new Property("Setpoint", 0.0, "Wartość zadana", 0.00001, 20000.0));
-            Properties.Add(new Property("S0V1", 0.01, "Wartość stanu x", 0.00001, 20000.0));
-            Properties.Add(new Property("S0V2", 0.01, "Wartość stanu o", 0.00001, 20000.0));
-            Properties.Add(new Property("S0V3", 0.01, "Wartość stanu xp", 0.00001, 20000.0));
-            Properties.Add(new Property("S0V4", 0.01, "Wartość stanu op", 0.00001, 20000.0));
-            Properties.Add(new Property("CommandingValue", 0.0, "Wartość sterująca.", 0.00001, 20000.0));
+            Properties.Add(new Property("Setpoint", 0.0, "Wartość zadana", 0.0, 360.0));
+            Properties.Add(new Property("S0V1", 0.0, "Wartość stanu x", 0.00001, 20000.0));
+            Properties.Add(new Property("S0V2", 180.0, "Wartość stanu o", 0.0, 360.0));
+            Properties.Add(new Property("S0V3", 0.0, "Wartość stanu xp", 0.00001, 20000.0));
+            Properties.Add(new Property("S0V4", 0.0, "Wartość stanu op", 0.00001, 20000.0));
+            Properties.Add(new Property("CommandingValue", 0.0, "Wartość sterująca.", -2.4, 2.4));
         }
 
         public override IModel CreateModel(List<Property> properties)

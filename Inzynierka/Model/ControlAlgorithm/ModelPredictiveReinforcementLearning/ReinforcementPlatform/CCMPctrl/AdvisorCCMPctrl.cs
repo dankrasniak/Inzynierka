@@ -65,8 +65,8 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
             Sampler = new ASampler();
 
             StartInState(_model.GetInitialState().ToArray());
-            MinAction = new Vector(1, 0.0); // TODO Assess the values
-            MaxAction = new Vector(1, 0.1); // TODO Assess the values
+            MinAction = new Vector(1, -10); // TODO Assess the values
+            MaxAction = new Vector(1, 10); // TODO Assess the values
 
             double[] stateAverage = { 0.0, 0.0, 0.0, 0.0 };// TODO Assess the values
             double[] stateStandardDeviation = { 1.0, 1.0, 1.0, 1.0 };// TODO Assess the values
@@ -75,13 +75,13 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
 	    }
 
         /// <returns>The value returned by the model.</returns>
-        public Double GetValueTMP() 
+        public List<Double> GetValueTMP() 
         {
             var currentAction = _model.GenerateControlVariables().ToArray();
 
             AdviseAction(ref currentAction);
-            ThisHappened(RungeKuttha(State.Table.ToList(), currentAction.ToList()).ToArray());
-            //ThisHappened(_model.StateFunction(State.Table.ToList(), currentAction.ToList()).ToArray());
+            //ThisHappened(RungeKuttha(State.Table.ToList(), currentAction.ToList()).ToArray());
+            ThisHappened(_model.StateFunction(State.Table.ToList(), currentAction.ToList()).ToArray());
 
             return _model.GetValue(State.Table.ToList());
         }
@@ -91,6 +91,13 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
         {
             TimeIndex = 0;
             StartInState(_model.GetInitialState().ToArray());
+            Actions = new Vector[HORIZON_SIZE];
+            NextStates = new Vector[HORIZON_SIZE];
+            for (int i = 0; i < HORIZON_SIZE; i++)
+            {
+                Actions[i] = new Vector(1, StartingActionsValue); // TODO
+                NextStates[i] = new Vector(4, 0.0); // TODO
+            }
         }
 
         public void Init(double[] stateAv, double[] stateStddev, double[] actionMin, int vsize)
@@ -132,7 +139,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
 		{
             Vest = CalculateStateValue(State, Actions, ref NextStates); 
             for (int i = 0; i < 10; i++) // kilka poprawek
-                AdjustActions(State, Sigma, ref Actions, ref NextStates, ref Vest);// / (Sigma + i)
+                AdjustActions(State, Sigma / (Sigma + i), ref Actions, ref NextStates, ref Vest);// / (Sigma + i)
 
             AllVisits.Add(new AVisit(TimeIndex++, State, Actions, NextStates)); 
             action = Actions[0].Table; 
@@ -151,6 +158,10 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
                     NextStates[i] = NextStates[i + 1];
                 }
             }
+            else
+            {
+                NextEpisode();
+            }
 
             // dokonujemy poprawek historycznych sterowań i funkcji V
             for (int k = 0; k < 10; k++) // kilka kolejnych stanów początkowych do poprawienia 
@@ -161,7 +172,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
 
                 // Try to Adjust its actions
                 for (int i = 0; i < 10; i++) // kilka poprawek
-                    AdjustActions(Visit.State, Sigma, ref Visit.Actions, ref Visit.NextStates, ref Vest);///(Sigma+i)
+                    AdjustActions(Visit.State, Sigma / (Sigma + i), ref Visit.Actions, ref Visit.NextStates, ref Vest);//  / (Sigma + i)
 
                 // Get the state value from the approximator & add calculated discrepancy to its weights(NN).
                 V.Approximate(Visit.State, ref Vval);
@@ -175,7 +186,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
         #region Model
         protected bool ModelIsStateAcceptable(Vector state)
         {
-            return _model.IsStateAcceptable(state.Table.ToList()); // TODO
+            return _model.IsStateAcceptable(state.Table.ToList());
         }
 
         protected double ModelReward(Vector nextState)
@@ -187,8 +198,8 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
 
         protected Vector ModelNextState(Vector state, Vector action)
         {
-            return new Vector(RungeKuttha(state.Table.ToList(), action.Table.ToList()).ToArray());
-            //return  new Vector(_model.StateFunction(state.Table.ToList(), action.Table.ToList()).ToArray());
+            //return new Vector(RungeKuttha(state.Table.ToList(), action.Table.ToList()).ToArray());
+            return  new Vector(_model.StateFunction(state.Table.ToList(), action.Table.ToList()).ToArray());
         }
 
         #region Predictive Control
@@ -245,7 +256,10 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
             {
                 next_states[i] = stateTmp = ModelNextState(stateTmp, actions[i]);
                 if (!ModelIsStateAcceptable(stateTmp))
-                    return value; 
+                {
+                    //NextEpisode();
+                    return value - 1000000; // TODO
+                }
                 value += gammai * ModelReward(stateTmp);
                 
                 gammai *= Gamma; 

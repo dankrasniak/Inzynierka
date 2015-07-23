@@ -10,6 +10,7 @@ namespace Inzynierka.Model.Model.Pendulum
         private List<Double> _initialState;
         private Double _setpoint;
         private Double _commandingValue;
+        private Double _XMAX = 2.4;
 
         public Pendulum(List<Property> properties)
         {
@@ -21,7 +22,7 @@ namespace Inzynierka.Model.Model.Pendulum
                 Convert.ToDouble(properties.Find(p => p.Name.Equals("S0V3")).Value),
                 Convert.ToDouble(properties.Find(p => p.Name.Equals("S0V4")).Value)
             };
-            _commandingValue = (double)properties.Find(p => p.Name.Equals("CommandingValue")).Value;
+            _commandingValue = Convert.ToDouble(properties.Find(p => p.Name.Equals("CommandingValue")).Value); // TODO
         }
 
         public List<Double> StateFunction2(List<Double> stateVariables, List<Double> controlVariables)
@@ -75,14 +76,14 @@ namespace Inzynierka.Model.Model.Pendulum
             var mic = 0.0005;
             var mip = 0.000002;
 
-            var Opp = (Double)(((-F - mp * l * Math.Pow(OldOp, 2) * Math.Sin(OldO) + mic * Math.Sign(OldXp)) / (mc + mp)) * Math.Cos(OldO) +
-                                 g * Math.Sin(OldO) + (mip * OldOp) / (mp * l))
-                                / (l * (4 / 3 - (mp * Math.Pow(Math.Cos(OldO), 2))) / (mc + mp));
+            var Opp = (Double)(((-F - mp * l * Math.Pow(OldOp, 2) * Math.Sin(OldO * Math.PI / 180.0) + mic * Math.Sign(OldXp)) / (mc + mp)) * Math.Cos(OldO * Math.PI / 180.0) +
+                                 g * Math.Sin(OldO * Math.PI / 180.0) + (mip * OldOp) / (mp * l))
+                                / (l * (4 / 3 - (mp * Math.Pow(Math.Cos(OldO * Math.PI / 180.0), 2)) / (mc + mp)));
 
             var Op = OldOp + h * Opp;
             var O = OldO + h * Op + 0.5 * h * h * Opp;
 
-            var xpp = (Double)(F + mp * l * (OldOp * OldOp * Math.Sin(OldO) - Opp * Math.Cos(OldO)) - mic * Math.Sign(OldXp)) / (mc + mp); // TODO Old or New O?
+            var xpp = (Double)(F + mp * l * (OldOp * OldOp * Math.Sin(OldO * Math.PI / 180.0) - Opp * Math.Cos(OldO * Math.PI / 180)) - mic * Math.Sign(OldXp)) / (mc + mp); // TODO Old or New O?
 
             var xp = OldXp + h * xpp;
             var x = OldX + h * xp + 0.5 * h * h * xpp;
@@ -97,14 +98,14 @@ namespace Inzynierka.Model.Model.Pendulum
             return stateVariables;
         }
 
-        public Double GetValue(List<Double> stateVariables)
+        public List<Double> GetValue(List<Double> stateVariables)
         {
-            return stateVariables[1];
+            return new List<double>() {stateVariables[0], stateVariables[1]};
         }
 
         public Double GetDiscrepancy(List<Double> stateVariables)
         {
-            return Math.Abs(_setpoint - GetValue(stateVariables));
+            return Math.Abs(_setpoint - 180 - Math.Abs(180.0 - GetValue(stateVariables)[1])); // TODO
         }
 
         public Boolean IsFirstBetter(List<Double> state1, List<Double> state2)
@@ -125,7 +126,7 @@ namespace Inzynierka.Model.Model.Pendulum
 
         public Boolean IsStateAcceptable(List<Double> state)
         {
-            return (state[0] > -100) && (state[0] < 100); // TODO Actual variables
+            return (state[0] >= -_XMAX) && (state[0] <= _XMAX);
         }
     }
 }

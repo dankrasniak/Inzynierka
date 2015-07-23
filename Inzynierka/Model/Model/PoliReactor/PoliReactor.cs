@@ -83,20 +83,20 @@ namespace Inzynierka.Model.Model.PoliReactor
             return result;
         }
 
-        public Double GetValue(List<Double> stateVariables)
+        public List<Double> GetValue(List<Double> stateVariables)
         {
-            return stateVariables[3]/stateVariables[2];
+            return new List<double> {stateVariables[3]/stateVariables[2]};
         }
 
         public Double GetDiscrepancy(List<Double> stateVariables)
         {
-            return Math.Abs(_setpoint - GetValue(stateVariables)); // TODO Czy musi być Abs
+            return Math.Abs(_setpoint - GetValue(stateVariables)[0]); // TODO Czy musi być Abs
         }
 
         public Boolean IsFirstBetter(List<Double> state1, List<Double> state2) // TODO Delete
         {
-            return (Math.Abs(_setpoint - GetValue(state1)) <
-                Math.Abs(_setpoint - GetValue(state2))) ;
+            return (Math.Abs(_setpoint - GetValue(state1)[0]) <
+                Math.Abs(_setpoint - GetValue(state2)[0])) ;
         }
 
         public List<Double> GenerateControlVariables()

@@ -1,7 +1,8 @@
 ﻿using Inzynierka.Model.ControlAlgorithm;
-using Inzynierka.Model.ControlAlgorithm.PredictionControl;
 using Inzynierka.Model.Model;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Windows.Input;
 
@@ -9,7 +10,27 @@ namespace Inzynierka.ViewModel
 {
     public class SimulationViewModel : ViewModelBase
     {
-        public double Value { get; set; }
+
+        private List<Double> _value;
+        public object Value // TODO Pendulum
+        {
+            get { return _value.Aggregate("", (current, added) => current + added.ToString() + "\n"); }
+            set
+            {
+                _value = (List<Double>) value;
+                if (_value.Count != 0)
+                {
+                    PendulumX = _value[0] * 100 / 2.4 + 325.0;
+                    PendulumT = _value[1];
+                }
+                OnPropertyChanged("PendulumX");
+                OnPropertyChanged("PendulumT");
+            }
+        }
+
+        public double PendulumX { get; set; }
+
+        public double PendulumT { get; set; }
 
         public IModel Model { get; set; }
 
@@ -20,8 +41,6 @@ namespace Inzynierka.ViewModel
         public Boolean Faster { get; set; }
 
         public Boolean IsFinished { get; set; }
-
-        public string TEXT { get; set; }
 
         public int TimeIndex { get; set; }
 
@@ -100,10 +119,11 @@ namespace Inzynierka.ViewModel
             #endregion ButtonInitialisation
 
             TimeIndex = 0;
+            PendulumX = 325.0;
 
             #region Thread
 
-            Value = 0;
+            Value = new List<double>();
             Loop = false;
             IsFinished = false;
             var thread = new Thread(this.Foo);

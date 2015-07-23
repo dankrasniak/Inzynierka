@@ -41,7 +41,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             }
         }
 
-        public Double GetValueTMP()
+        public List<Double> GetValueTMP()
         {
             var controlVariables = GetControlVariables();
             _logger.Log("Wartość wejściowa", 
@@ -61,7 +61,8 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
                 _state.Aggregate("", (s, d) => s + FormatDouble(d) + " ")); // TODO
 
             var result = _model.GetValue(_state);
-            _logger.Log("Wartość wyjściowa", result); // TODO
+            string temp = result.Aggregate("", (current, add) => current + add);
+            _logger.Log("Wartość wyjściowa", temp); // TODO
 
             return result;
         }
@@ -81,7 +82,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
         private readonly int M = 10;
         private const double C1 = 0.82;
         private const double C2 = 1.2;
-        private const double SigmaMin = 0.0001;
+        private const double SigmaMin = 0.001;
 
         private double _sigma; // Standard deviation
         private readonly double _startSigma;
@@ -113,8 +114,10 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             _logger.Log("Possible states", "Possible states: " + FormatDouble(currentHorizonValue) + " VS: " + FormatDouble(newHorizonValue)); // TODO
 
             if (currentHorizonValue <= newHorizonValue)
+            {
                 _horizon = modifiedHorizon;
-
+                ++_phi;
+            }
             UpdateSigma();
         }
 
@@ -132,8 +135,10 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             _logger.Log("Possible states", "Possible states: " + FormatDouble(currentHorizonValue) + " VS: " + FormatDouble(newHorizonValue));
 
             if (!_model.IsFirstBetter(currentHorizonState, newHorizonState))
+            {
                 _horizon = modifiedHorizon;
-
+                ++_phi;
+            }
             UpdateSigma();
         }
 
@@ -178,22 +183,18 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             if (_iterationNum % M != 0)
                 return;
 
-            if ((double)_phi / M < 1.5)
+            if ((double)_phi / M < 0.2)
             {
-                _phi = 0;
                 _sigma *= C1;
-                return;
             }
-            if ((double)_phi / M > 1.5)
+            else if ((double)_phi / M > 0.2)
             {
-                _phi = 0;
                 _sigma *= C2;
-                return;
             }
-            _phi = 0; // == 1.5
+            _phi = 0; // == 0.2
         }
 
-        private readonly Random _rand = new Random(); //reuse this if you are generating many
+        private readonly Random _rand = new Random();
 
         private double GetGaussian() // TODO Verify
         {

@@ -9,7 +9,7 @@ namespace Inzynierka.Model.Model
         List<Double> GenerateControlVariables();
 
         // Return the output value.
-        Double GetValue(List<Double> stateVariables);
+        List<Double> GetValue(List<Double> stateVariables);
 
         // By how much the current output value is different from the setpoint.
         Double GetDiscrepancy(List<Double> stateVariables);
