@@ -10,7 +10,7 @@ namespace Inzynierka.Model.Model.Pendulum
         private List<Double> _initialState;
         private Double _setpoint;
         private Double _commandingValue;
-        private Double _XMAX = 2.4;
+        public Double _XMAX = 2.4;
 
         public Pendulum(List<Property> properties)
         {
@@ -59,7 +59,7 @@ namespace Inzynierka.Model.Model.Pendulum
             return stateVariables;
         }
 
-        public List<Double> StateFunction(List<Double> stateVariables, List<Double> controlVariables)
+        public List<Double> StateFunction3(List<Double> stateVariables, List<Double> controlVariables)
         {
             const double h = 0.005;
 
@@ -80,7 +80,7 @@ namespace Inzynierka.Model.Model.Pendulum
                                  g * Math.Sin(OldO * Math.PI / 180.0) + (mip * OldOp) / (mp * l))
                                 / (l * (4 / 3 - (mp * Math.Pow(Math.Cos(OldO * Math.PI / 180.0), 2)) / (mc + mp)));
 
-            var Op = OldOp + h * Opp;
+            var Op = OldOp + h * Opp * 180 / Math.PI;
             var O = OldO + h * Op + 0.5 * h * h * Opp;
 
             var xpp = (Double)(F + mp * l * (OldOp * OldOp * Math.Sin(OldO * Math.PI / 180.0) - Opp * Math.Cos(OldO * Math.PI / 180)) - mic * Math.Sign(OldXp)) / (mc + mp); // TODO Old or New O?
@@ -88,7 +88,43 @@ namespace Inzynierka.Model.Model.Pendulum
             var xp = OldXp + h * xpp;
             var x = OldX + h * xp + 0.5 * h * h * xpp;
 
-            //throw new NotImplementedException(); // TODO
+
+            stateVariables[0] = x;
+            stateVariables[1] = O;
+            stateVariables[2] = xp;
+            stateVariables[3] = Op;
+
+            return stateVariables;
+        }
+        public List<Double> StateFunction(List<Double> stateVariables, List<Double> controlVariables)
+        {
+            const double h = 0.005;
+
+            var OldX = stateVariables[0];
+            var OldO = stateVariables[1];
+            var OldXp = stateVariables[2];
+            var OldOp = stateVariables[3];
+
+            var F = controlVariables[0];
+            var g = 9.81;
+            var mc = 1;
+            var mp = 0.1;
+            var l = 0.5;
+            var mic = 0.0005;
+            var mip = 0.000002;
+
+            var Opp = (Double)(((-F - mp * l * Math.Pow(OldOp, 2) * Math.Sin(OldO) + mic * Math.Sign(OldXp)) / (mc + mp)) * Math.Cos(OldO) +
+                                 g * Math.Sin(OldO) + (mip * OldOp) / (mp * l))
+                                / (l * (4 / 3 - (mp * Math.Pow(Math.Cos(OldO), 2)) / (mc + mp)));
+
+            var O = OldO + h * OldOp + 0.5 * h * h * Opp;
+            var Op = OldOp + h*Opp;
+
+            var xpp = (Double)(F + mp * l * (OldOp * OldOp * Math.Sin(OldO) - Opp * Math.Cos(OldO)) - mic * Math.Sign(OldXp)) / (mc + mp);
+
+            var x = OldX + h * OldXp + 0.5 * h * h * xpp;
+            var xp = OldXp + h * xpp;
+
 
             stateVariables[0] = x;
             stateVariables[1] = O;
@@ -105,7 +141,7 @@ namespace Inzynierka.Model.Model.Pendulum
 
         public Double GetDiscrepancy(List<Double> stateVariables)
         {
-            return Math.Abs(_setpoint - 180 - Math.Abs(180.0 - GetValue(stateVariables)[1])); // TODO
+            return Math.Abs(_setpoint - Math.PI/2 - Math.Abs(Math.PI/2 - GetValue(stateVariables)[1])); // TODO
         }
 
         public Boolean IsFirstBetter(List<Double> state1, List<Double> state2)

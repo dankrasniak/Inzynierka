@@ -25,6 +25,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             M = (int) Convert.ToDouble(properties.Find(p => p.Name.Equals("M")).Value);
             _startSigma = Convert.ToDouble(properties.Find(p => p.Name.Equals("StartSigma")).Value);
             _horizonSize = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("Horizon")).Value);
+            _sigmaMin = Convert.ToDouble(properties.Find(p => p.Name.Equals("SigmaMin")).Value);
 
             _model = model;
             _state = _model.GetInitialState();
@@ -58,11 +59,11 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             */
 
             _logger.Log("stateVariables", 
-                _state.Aggregate("", (s, d) => s + FormatDouble(d) + " ")); // TODO
+                _state.Aggregate("", (s, d) => s + FormatDouble(d) + " "));
 
             var result = _model.GetValue(_state);
-            string temp = result.Aggregate("", (current, add) => current + add);
-            _logger.Log("Wartość wyjściowa", temp); // TODO
+            var temp = result.Aggregate("", (current, add) => current + add);
+            _logger.Log("Wartość wyjściowa", temp);
 
             return result;
         }
@@ -82,7 +83,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
         private readonly int M = 10;
         private const double C1 = 0.82;
         private const double C2 = 1.2;
-        private const double SigmaMin = 0.001;
+        private readonly double _sigmaMin;
 
         private double _sigma; // Standard deviation
         private readonly double _startSigma;
@@ -149,7 +150,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
 
             for (int i = 0; i < _horizonSize; ++i)
             {
-                horizonValue -= i*Math.Pow(_model.GetDiscrepancy(horizonStatesList[i]), 2);
+                horizonValue -= (i+1)*Math.Pow(_model.GetDiscrepancy(horizonStatesList[i]), 2);
             }
 
             return horizonValue;
@@ -158,13 +159,13 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
         private List<List<Double>> ModifyHorizon(List<List<Double>> horizon)
         {
             var modifiedHorizon = new List<List<Double>>();
-            int ControlVariablesNr = (horizon[0]).Count;
+            var CONTROL_VARIABLES_NR = (horizon[0]).Count;
 
             for (int i = 0; i < _horizonSize; ++i)
             {
                 modifiedHorizon.Add(new List<Double>(horizon[i]));
 
-                for (int j = 0; j < ControlVariablesNr; ++j)
+                for (int j = 0; j < CONTROL_VARIABLES_NR; ++j)
                 {
                     modifiedHorizon[i][j] = Math.Abs(horizon[i][j] + _sigma * GetGaussian());
                 }
@@ -175,7 +176,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
 
         private bool IsFinished()
         {
-            return _sigma < SigmaMin;
+            return _sigma < _sigmaMin;
         }
 
         private void UpdateSigma()
@@ -237,7 +238,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
         private void UpdateHorizon()
         {
             _horizon.RemoveAt(0);
-            _horizon.Add(_horizon[_horizonSize - 2]); // (_model.GenerateControlVariables()); // TODO
+            _horizon.Add(_model.GenerateControlVariables()); // TODO // (_horizon[_horizonSize - 2]);
         }
 
         private void UpdateHorizon2()

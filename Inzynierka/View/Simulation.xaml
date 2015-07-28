@@ -49,9 +49,7 @@
 
             </Canvas>
             <Label Content="Wartości wyjściowe:" Margin="10" Grid.Row="4" Grid.Column="0"/>
-            <TextBlock TextWrapping="Wrap" Text="{Binding Value}" Margin="10" Grid.Row="5" Grid.Column="0" Foreground="White" Grid.RowSpan="3">
-
-            </TextBlock>
+            <TextBlock TextWrapping="Wrap" Text="{Binding Value}" Margin="10" Grid.Row="5" Grid.Column="0" Foreground="White" Grid.RowSpan="3"/>
             <!--<DataGrid ItemsSource="{Binding Value}" Margin="10" Grid.Row="5" Grid.RowSpan="2" Grid.Column="0"
                       AutoGenerateColumns="True"/>-->
 

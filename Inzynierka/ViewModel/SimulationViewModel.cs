@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Windows.Input;
+using Inzynierka.Model.Model.Pendulum;
 
 namespace Inzynierka.ViewModel
 {
@@ -20,8 +21,13 @@ namespace Inzynierka.ViewModel
                 _value = (List<Double>) value;
                 if (_value.Count != 0)
                 {
-                    PendulumX = _value[0] * 100 / 2.4 + 325.0;
-                    PendulumT = _value[1];
+                    if (Model is Pendulum)
+                    {
+                        PendulumX = _value[0]*200/((Pendulum) Model)._XMAX + 325.0;
+                        PendulumT = _value[1]*180/Math.PI;
+                    }
+                    else
+                        PendulumT = _value[0]*90/25000.5 - 90;
                 }
                 OnPropertyChanged("PendulumX");
                 OnPropertyChanged("PendulumT");

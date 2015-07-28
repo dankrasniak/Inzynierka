@@ -136,6 +136,7 @@
     <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcementLearning\Computing\Matrix.cs" />
     <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcementLearning\Computing\MatrixToolbox.cs" />
     <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcementLearning\ModelPredictiveReinforcementLearningFactory.cs" />
+    <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcementLearning\ReinforcementPlatform\ACartAndPendulum.cs" />
     <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcementLearning\ReinforcementPlatform\CCMPctrl\AdvisorCCMPctrl-Visit.cs" />
     <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcementLearning\ReinforcementPlatform\CCMPctrl\AdvisorCCMPctrl.cs" />
     <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcementLearning\Computing\Vector.cs" />

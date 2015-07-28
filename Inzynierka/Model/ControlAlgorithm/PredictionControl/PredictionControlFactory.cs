@@ -20,6 +20,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             Properties.Add(new Property("H_STEP", 0.001, "RungeKutta, wartość skoku.", 0.00001, 1.0));
             Properties.Add(new Property("Horizon", 20, "Długość horyzontu", 0.00001, 20000.0));
             Properties.Add(new Property("StartSigma", 0.001, "Algorytm ewolucyjny, wartość sigmy.", 0.001, 20.0));
+            Properties.Add(new Property("SigmaMin", 0.001, "Wartość minimalna sigmy.", 0.00001, 10.0));
             Properties.Add(new Property("M", 10, "Algorytm ewolucyjny, wartość M.", 0.001, 20.0));
 
             LoggedValues = new List<LoggedValue>();
