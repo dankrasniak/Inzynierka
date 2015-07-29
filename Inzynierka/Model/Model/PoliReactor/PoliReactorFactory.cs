@@ -14,6 +14,7 @@ namespace Inzynierka.Model.Model.PoliReactor
             Description = "Opis reaktora.";
 
             Properties = new List<Property>();
+            Properties.Add(new Property("H_STEP", 0.001, "RungeKutta, wartość skoku.", 0.00001, 1.0));
             Properties.Add(new Property("S0V1", 0.01, "Wartość 1 stanu poczatkowego reaktora.", 0.0, 1000));
             Properties.Add(new Property("S0V2", 0.01, "Wartość 2 stanu poczatkowego reaktora.", 0.0, 1000));
             Properties.Add(new Property("S0V3", 0.01, "Wartość 3 stanu poczatkowego reaktora.", 0.0, 1000));

@@ -1,4 +1,6 @@
-﻿using Inzynierka.Model.Logger;
+﻿using System.Windows;
+using System.Windows.Markup;
+using Inzynierka.Model.Logger;
 using Inzynierka.Model.Model;
 using System;
 using System.Collections.Generic;
@@ -14,22 +16,25 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
         private List<Double> _state;
         private List<List<Double>> _horizon;
         private readonly int _horizonSize;
-        private double H_STEP_SIZE = 0.001; // TODO Verify
+        private double H_STEP_SIZE = 0.0001; // TODO Verify
+        private readonly double _duration; // TODO temp
+        private int _tempIteration = 0;
 
         public PredictionControl(IModel model, List<Property> properties, List<LoggedValue> loggedValues) 
         {
             _logger = new LogIt("", loggedValues); // TODO Add Path
 
             // Variables from properties list
-            H_STEP_SIZE = Convert.ToDouble(properties.Find(p => p.Name.Equals("H_STEP")).Value);
             M = (int) Convert.ToDouble(properties.Find(p => p.Name.Equals("M")).Value);
             _startSigma = Convert.ToDouble(properties.Find(p => p.Name.Equals("StartSigma")).Value);
             _horizonSize = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("Horizon")).Value);
             _sigmaMin = Convert.ToDouble(properties.Find(p => p.Name.Equals("SigmaMin")).Value);
 
+            //_duration = 0.001 / H_STEP_SIZE; // TODO
             _model = model;
             _state = _model.GetInitialState();
             GenerateHorizon();
+            _model.SetDiscretizations(0.001, H_STEP_SIZE);
         }
 
         private void GenerateHorizon()
@@ -48,15 +53,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             _logger.Log("Wartość wejściowa", 
                 controlVariables.Aggregate("", (current, t) => current + (FormatDouble(t) + " ")));
 
-            _state = RungeKuttha(_state, controlVariables);
-            /* // TODO Delete? Czy tak powinno się robić?
-            var STATE_VAR_COUNT = nextState.Count;
-
-            for (int i = 0; i < STATE_VAR_COUNT; ++i)
-            {
-                _state[i] = nextState[i];
-            }
-            */
+            _state = _model.StateFunction(_state, controlVariables); // RungeKuttha
 
             _logger.Log("stateVariables", 
                 _state.Aggregate("", (s, d) => s + FormatDouble(d) + " "));
@@ -70,6 +67,11 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
 
         private List<Double> GetControlVariables()
         {
+//            if (++_tempIteration < _duration)
+//                return _horizon[0];
+
+            //_tempIteration = 0;
+            
             PrepareHorizont();
 
             _logger.Log("horizon", 
@@ -228,7 +230,8 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             var stateList = new List<List<Double>>();
             foreach (var controlValues in horizon)
             {
-                state = RungeKuttha(state, controlValues);
+                //for (int i = 0; i < _duration; ++i)
+                    state = _model.StateFunction(state, controlValues); // RungeKuttha
 
                 stateList.Add(new List<Double>(state));
             }

@@ -8,9 +8,13 @@ namespace Inzynierka.Model.Model.PoliReactor
         private readonly List<Double> _initialState = new List<Double>() {0.01, 0.01, 0.01, 0.01}; //{ 5.506774, 0.132906, 0.0019752, 49.38182 };
         private readonly Double _setpoint = 25000.5;
         private readonly Double _commandingValue = 0.0;
+        private double H_STEP_SIZE = 0.001; // TODO Verify
+        private double _externalDiscretization = 0.001;
+        private double _internalDiscretization = 0.0001;
 
         public PoliReactor(List<Property> properties)
         {
+            H_STEP_SIZE = Convert.ToDouble(properties.Find(p => p.Name.Equals("H_STEP")).Value);
             _setpoint = Convert.ToDouble(properties.Find(p => p.Name.Equals("Setpoint")).Value);
             _initialState = new List<double>()
             {
@@ -45,7 +49,7 @@ namespace Inzynierka.Model.Model.PoliReactor
             return result;
         }
 
-        public List<Double> StateFunction(List<Double> stateVariables, List<Double> controlVariables)
+        private List<Double> StateFunction3(List<Double> stateVariables, List<Double> controlVariables)
         {
             var result = new List<Double>(stateVariables);
 
@@ -83,6 +87,58 @@ namespace Inzynierka.Model.Model.PoliReactor
             return result;
         }
 
+        public List<Double> StateFunction(List<Double> stateVariables, List<Double> controlVariables)
+        {
+            for (double t = 0; t < _externalDiscretization; t += H_STEP_SIZE)
+            {
+                H_STEP_SIZE = Math.Min(_internalDiscretization, _externalDiscretization - t);
+                stateVariables = RungeKuttha(stateVariables, controlVariables);
+            }
+            return stateVariables;
+        } 
+
+        private List<Double> RungeKuttha(List<Double> stateVariables, List<Double> controlVariables)
+        {
+            var k1 = StateFunction3(stateVariables, controlVariables);
+            var k2 = StateFunction3(Add(stateVariables, Multiply(0.5 * H_STEP_SIZE, k1)), controlVariables);
+            var k3 = StateFunction3(Add(stateVariables, Multiply(0.5 * H_STEP_SIZE, k2)), controlVariables);
+            var k4 = StateFunction3(Add(stateVariables, Multiply(H_STEP_SIZE, k3)), controlVariables);
+
+            return Add(stateVariables, Multiply(H_STEP_SIZE / 6.0, (Add(k1, Add(Multiply(2, k2), Add(Multiply(2, k3), k4))))));
+        }
+
+        private static List<Double> Multiply(Double variable, List<Double> vector)
+        {
+            var result = new List<Double>(vector);
+            var ARRAY_SIZE = vector.Count;
+
+            for (int i = 0; i < ARRAY_SIZE; ++i)
+            {
+                result[i] = result[i] * variable;
+            }
+
+            return result;
+        }
+
+        private static List<Double> Add(List<Double> a1, List<Double> a2)
+        {
+            var result = new List<Double>(a1);
+            var ARRAY_SIZE = a1.Count;
+
+            for (int i = 0; i < ARRAY_SIZE; ++i)
+            {
+                result[i] = result[i] + a2[i];
+            }
+
+            return result;
+        }
+
+        public void SetDiscretizations(double externalDiscretization, double internalDiscretization)
+        {
+            _internalDiscretization = internalDiscretization;
+            _externalDiscretization = externalDiscretization;
+        }
+
         public List<Double> GetValue(List<Double> stateVariables)
         {
             return new List<double> {stateVariables[3]/stateVariables[2]};
@@ -111,7 +167,13 @@ namespace Inzynierka.Model.Model.PoliReactor
 
         public Boolean IsStateAcceptable(List<Double> state)
         {
-            return true; //GetValue(state) >= 0; TODO
+            return GetValue(state)[0] >= 0; //TODO
+        }
+
+        public Double GetReward(List<Double> state)
+        {
+            //throw new NotImplementedException();
+            return (-1)*Math.Pow(GetDiscrepancy(state), 2) / _setpoint; //GetValue(state)[0];
         }
     }
 }

@@ -7,10 +7,13 @@ namespace Inzynierka.Model.Model.Pendulum
     public class Pendulum : IModel
     {
         public static string Name = "Pendulum";
+        public Double _XMAX = 2.4;
         private List<Double> _initialState;
         private Double _setpoint;
         private Double _commandingValue;
-        public Double _XMAX = 2.4;
+        private Double _internalDiscretization;
+        private Double _externalDiscretization;
+        private double _time = 0.005;
 
         public Pendulum(List<Property> properties)
         {
@@ -96,9 +99,9 @@ namespace Inzynierka.Model.Model.Pendulum
 
             return stateVariables;
         }
-        public List<Double> StateFunction(List<Double> stateVariables, List<Double> controlVariables)
+        public List<Double> StateFunctionPart(List<Double> stateVariables, List<Double> controlVariables)
         {
-            const double h = 0.005;
+            double h = _time;
 
             var OldX = stateVariables[0];
             var OldO = stateVariables[1];
@@ -134,6 +137,22 @@ namespace Inzynierka.Model.Model.Pendulum
             return stateVariables;
         }
 
+        public List<Double> StateFunction(List<Double> stateVariables, List<Double> controlVariables)
+        {
+            for (double t = 0; t < _externalDiscretization; t += _internalDiscretization)
+            {
+                _time = Math.Min(_internalDiscretization, _externalDiscretization - t);
+                stateVariables = StateFunctionPart(stateVariables, controlVariables);
+            }
+            return stateVariables;
+        }
+
+        public void SetDiscretizations(double externalDiscretization, double internalDiscretization)
+        {
+            _externalDiscretization = externalDiscretization;
+            _internalDiscretization = internalDiscretization;
+        }
+
         public List<Double> GetValue(List<Double> stateVariables)
         {
             return new List<double>() {stateVariables[0], stateVariables[1]};
@@ -141,7 +160,7 @@ namespace Inzynierka.Model.Model.Pendulum
 
         public Double GetDiscrepancy(List<Double> stateVariables)
         {
-            return Math.Abs(_setpoint - Math.PI/2 - Math.Abs(Math.PI/2 - GetValue(stateVariables)[1])); // TODO
+            return Math.Abs(_setpoint - Math.PI - Math.Abs(Math.PI - GetValue(stateVariables)[1])); // TODO
         }
 
         public Boolean IsFirstBetter(List<Double> state1, List<Double> state2)
@@ -163,6 +182,11 @@ namespace Inzynierka.Model.Model.Pendulum
         public Boolean IsStateAcceptable(List<Double> state)
         {
             return (state[0] >= -_XMAX) && (state[0] <= _XMAX);
+        }
+
+        public Double GetReward(List<Double> state)
+        {
+            return Math.Cos(state[1]);// - Math.Abs(state[0]/15) - Math.Abs(state[2]/30) - Math.Abs(state[3]/30);
         }
     }
 }

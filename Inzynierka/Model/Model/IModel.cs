@@ -19,5 +19,9 @@ namespace Inzynierka.Model.Model
         Boolean IsStateAcceptable(List<Double> state);
 
         Boolean IsFirstBetter(List<Double> state1, List<Double> state2); // TODO Delete TMP
+
+        Double GetReward(List<Double> state);
+
+        void SetDiscretizations(double externalDiscretization, double internalDiscretization);
     }
 }
