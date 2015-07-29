@@ -19,8 +19,11 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             Properties = new List<Property>();
             Properties.Add(new Property("Horizon", 20, "Długość horyzontu", 0.00001, 20000.0));
             Properties.Add(new Property("StartSigma", 0.001, "Algorytm ewolucyjny, wartość sigmy.", 0.001, 20.0));
-            Properties.Add(new Property("SigmaMin", 0.001, "Wartość minimalna sigmy.", 0.00001, 10.0));
+            Properties.Add(new Property("SigmaMin", 0.0001, "Wartość minimalna sigmy.", 0.00001, 10.0));
             Properties.Add(new Property("M", 10, "Algorytm ewolucyjny, wartość M.", 0.001, 20.0));
+            Properties.Add(new Property("InternalDiscretization", 0.001, "Wartość kroku reprezentującego czas wewnątrze funkcji stanu.", 0.0, 100.0));
+            Properties.Add(new Property("ExternalDiscretization", 0.01, "Wartość kroku reprezentującego czas trwania jednej wartości sterującej", 0.0, 100.0));
+            Properties.Add(new Property("TimeLimit", 15, "Limit czasu na jeden epizod.", 1, 1000));
 
             LoggedValues = new List<LoggedValue>();
             LoggedValues.Add(new LoggedValue(Name, "Wartość wyjściowa", false));
@@ -28,7 +31,6 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             LoggedValues.Add(new LoggedValue(Name, "horizon", false));
             LoggedValues.Add(new LoggedValue(Name, "Possible states", false));
             LoggedValues.Add(new LoggedValue(Name, "Wartość wejściowa", false));
-            //LoggedValues.Add(new LoggedValue(Name, , true));
         }
 
         public override IAlgorithm CreateAlgorithm(IModel model, List<Property> properties, List<LoggedValue> loggedValues)

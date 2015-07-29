@@ -75,8 +75,8 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
             IterationsLimit = (int) (TimeLimit / externalDiscretization);
 
             StartInState(_model.GetInitialState().ToArray());
-            MinAction = new Vector(1, -10); // TODO Assess the values 0.01
-            MaxAction = new Vector(1, 10); // TODO Assess the values 0.02
+            MinAction = new Vector(_model.MinActionValues());
+            MaxAction = new Vector(_model.MaxActionValues());
 
             double[] stateAverage = { 0.0, 0.0, 0.0, 0.0, 0.0 };// TODO Assess the values
             double[] stateStandardDeviation = { 1.0, 1.0, 1.0, 1.0, 1.0 };// TODO Assess the values
@@ -129,9 +129,12 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
         public void NextEpisode()
         {
             TimeIndex = 0;
-            var newState = new Vector(_model.GetInitialState().ToArray());
-            newState.Table[1] = Sampler.NextDouble() * 2 * Math.PI; ;//25000.5; //
-            StartInState(newState.Table);
+
+            StartInState(_model.MeddleWithGoalAndStartingState().ToArray());
+//            var newState = new Vector(_model.GetInitialState().ToArray());
+//            newState.Table[1] = Sampler.NextDouble() * 2 * Math.PI; ;//25000.5; //
+//            StartInState(newState.Table);
+
             Actions = new Vector[HORIZON_SIZE];
             NextStates = new Vector[HORIZON_SIZE];
             for (int i = 0; i < HORIZON_SIZE; i++)
@@ -217,7 +220,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
 
         protected Vector ModelNextState(Vector state, Vector action)
         {
-            return  new Vector(_model.StateFunction(state.Table.ToList(), action.Table.ToList()).ToArray());
+            return new Vector(_model.StateFunction(state.Table.ToList(), action.Table.ToList()).ToArray());
         }
 
         #endregion 

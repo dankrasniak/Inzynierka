@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Remoting;
+using Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning.Probability;
 
 namespace Inzynierka.Model.Model.Pendulum
 {
@@ -14,6 +15,8 @@ namespace Inzynierka.Model.Model.Pendulum
         private Double _internalDiscretization;
         private Double _externalDiscretization;
         private double _time = 0.005;
+        private double[] _minActionValues = new double[1];
+        private double[] _maxActionValues = new double[1];
 
         public Pendulum(List<Property> properties)
         {
@@ -26,6 +29,8 @@ namespace Inzynierka.Model.Model.Pendulum
                 Convert.ToDouble(properties.Find(p => p.Name.Equals("S0V4")).Value)
             };
             _commandingValue = Convert.ToDouble(properties.Find(p => p.Name.Equals("CommandingValue")).Value); // TODO
+            _minActionValues[0] = Convert.ToDouble(properties.Find(p => p.Name.Equals("MinActionValue")).Value);
+            _maxActionValues[0] = Convert.ToDouble(properties.Find(p => p.Name.Equals("MaxActionValues")).Value);
         }
 
         public List<Double> StateFunction2(List<Double> stateVariables, List<Double> controlVariables)
@@ -187,6 +192,23 @@ namespace Inzynierka.Model.Model.Pendulum
         public Double GetReward(List<Double> state)
         {
             return Math.Cos(state[1]);// - Math.Abs(state[0]/15) - Math.Abs(state[2]/30) - Math.Abs(state[3]/30);
+        }
+
+        public List<Double> MeddleWithGoalAndStartingState()
+        {
+            var state = GetInitialState();
+            state[1] = new ASampler().NextDouble() * 2 * Math.PI;
+            return state;
+        }
+
+        public double[] MinActionValues()
+        {
+            return _minActionValues;
+        }
+
+        public double[] MaxActionValues()
+        {
+            return _maxActionValues;
         }
     }
 }

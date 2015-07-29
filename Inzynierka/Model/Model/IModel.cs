@@ -23,5 +23,11 @@ namespace Inzynierka.Model.Model
         Double GetReward(List<Double> state);
 
         void SetDiscretizations(double externalDiscretization, double internalDiscretization);
+
+        List<Double> MeddleWithGoalAndStartingState();
+
+        double[] MinActionValues();
+
+        double[] MaxActionValues();
     }
 }

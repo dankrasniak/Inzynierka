@@ -1,6 +1,4 @@
-﻿using System.Windows;
-using System.Windows.Markup;
-using Inzynierka.Model.Logger;
+﻿using Inzynierka.Model.Logger;
 using Inzynierka.Model.Model;
 using System;
 using System.Collections.Generic;
@@ -16,9 +14,10 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
         private List<Double> _state;
         private List<List<Double>> _horizon;
         private readonly int _horizonSize;
-        private double H_STEP_SIZE = 0.0001; // TODO Verify
-        private readonly double _duration; // TODO temp
-        private int _tempIteration = 0;
+        private int _iterationNr;
+        private readonly int _iterationsLimit;    // max czasu na jeden epizod
+        private readonly double[] _minAction;    // min sterowania 
+        private readonly double[] _maxAction;    // max sterowania
 
         public PredictionControl(IModel model, List<Property> properties, List<LoggedValue> loggedValues) 
         {
@@ -29,12 +28,22 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             _startSigma = Convert.ToDouble(properties.Find(p => p.Name.Equals("StartSigma")).Value);
             _horizonSize = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("Horizon")).Value);
             _sigmaMin = Convert.ToDouble(properties.Find(p => p.Name.Equals("SigmaMin")).Value);
+            var externalDiscretization =
+                Convert.ToDouble(properties.Find(p => p.Name.Equals("ExternalDiscretization")).Value);
+            var internalDiscretization =
+                Convert.ToDouble(properties.Find(p => p.Name.Equals("InternalDiscretization")).Value);
+            var TimeLimit = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("TimeLimit")).Value);
 
-            //_duration = 0.001 / H_STEP_SIZE; // TODO
+            _iterationsLimit = (int)(TimeLimit / externalDiscretization);
+
             _model = model;
-            _state = _model.GetInitialState();
+            _model.SetDiscretizations(externalDiscretization, internalDiscretization);
+            _state = new List<double>(_model.GetInitialState());
+            _minAction = _model.MinActionValues();
+            _maxAction = _model.MaxActionValues();
+
             GenerateHorizon();
-            _model.SetDiscretizations(0.001, H_STEP_SIZE);
+            _iterationNr = 0;
         }
 
         private void GenerateHorizon()
@@ -49,14 +58,20 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
 
         public List<Double> GetValueTMP()
         {
+            if (_iterationNr++ > _iterationsLimit)
+                NextEpisode();
+
             var controlVariables = GetControlVariables();
             _logger.Log("Wartość wejściowa", 
                 controlVariables.Aggregate("", (current, t) => current + (FormatDouble(t) + " ")));
 
-            _state = _model.StateFunction(_state, controlVariables); // RungeKuttha
+            _state = _model.StateFunction(_state, controlVariables);
 
             _logger.Log("stateVariables", 
                 _state.Aggregate("", (s, d) => s + FormatDouble(d) + " "));
+
+            if (!_model.IsStateAcceptable(_state))
+                NextEpisode();
 
             var result = _model.GetValue(_state);
             var temp = result.Aggregate("", (current, add) => current + add);
@@ -65,13 +80,15 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             return result;
         }
 
+        private void NextEpisode()
+        {
+            _state = new List<double>(_model.MeddleWithGoalAndStartingState());
+            GenerateHorizon();
+            _iterationNr = 0;
+        }
+
         private List<Double> GetControlVariables()
         {
-//            if (++_tempIteration < _duration)
-//                return _horizon[0];
-
-            //_tempIteration = 0;
-            
             PrepareHorizont();
 
             _logger.Log("horizon", 
@@ -87,9 +104,9 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
         private const double C2 = 1.2;
         private readonly double _sigmaMin;
 
-        private double _sigma; // Standard deviation
+        private double _sigma;                  // Standard deviation
         private readonly double _startSigma;
-        private int _phi; // Number of times the child specimen was chosen over the parent specimen in the last cicle of M iterations
+        private int _phi;                       // Number of times the child specimen was chosen over the parent specimen in the last cicle of M iterations
         private int _iterationNum;
 
         private void PrepareHorizont()
@@ -116,7 +133,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
 
             _logger.Log("Possible states", "Possible states: " + FormatDouble(currentHorizonValue) + " VS: " + FormatDouble(newHorizonValue)); // TODO
 
-            if (currentHorizonValue <= newHorizonValue)
+            if (currentHorizonValue < newHorizonValue)
             {
                 _horizon = modifiedHorizon;
                 ++_phi;
@@ -152,10 +169,24 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
 
             for (int i = 0; i < _horizonSize; ++i)
             {
-                horizonValue -= (i+1)*Math.Pow(_model.GetDiscrepancy(horizonStatesList[i]), 2);
+                if (_model.IsStateAcceptable(horizonStatesList[i]))
+                    horizonValue += (i + 1)*_model.GetReward(horizonStatesList[i]);
+                else
+                {
+                    for (; i < _horizonSize; ++i)
+                    {
+                        horizonValue += ModelPenalty();
+                    }
+                }
+                //horizonValue -= (i+1)*Math.Pow(_model.GetDiscrepancy(horizonStatesList[i]), 2);
             }
 
             return horizonValue;
+        }
+
+        private double ModelPenalty()
+        {
+            return -25000.0;//_model.Penalty(); // TODO
         }
 
         private List<List<Double>> ModifyHorizon(List<List<Double>> horizon)
@@ -169,7 +200,10 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
 
                 for (int j = 0; j < CONTROL_VARIABLES_NR; ++j)
                 {
-                    modifiedHorizon[i][j] = Math.Abs(horizon[i][j] + _sigma * GetGaussian());
+                    modifiedHorizon[i][j] = Math.Min(
+                        Math.Max(_minAction[j], horizon[i][j] + _sigma * GetGaussian()),
+                        _maxAction[j]);
+                    //Math.Abs(horizon[i][j] + _sigma * GetGaussian());
                 }
             }
 
@@ -219,9 +253,8 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
 
         private List<Double> GetFinalState(List<double> initialState, IEnumerable<List<double>> horizon)
         {
-            //var state = new List<Double>(initialState);
-            //state = horizon.Aggregate(state, RungeKuttha);
-            return horizon.Aggregate(initialState, RungeKuttha); ;
+            throw new NotSupportedException();
+            //return horizon.Aggregate(initialState, RungeKuttha);
         }
 
         private List<List<Double>> GetHorizonStatesList(IEnumerable<double> initialState, IEnumerable<List<double>> horizon)
@@ -230,8 +263,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             var stateList = new List<List<Double>>();
             foreach (var controlValues in horizon)
             {
-                //for (int i = 0; i < _duration; ++i)
-                    state = _model.StateFunction(state, controlValues); // RungeKuttha
+                state = _model.StateFunction(state, controlValues);
 
                 stateList.Add(new List<Double>(state));
             }
@@ -241,49 +273,13 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
         private void UpdateHorizon()
         {
             _horizon.RemoveAt(0);
-            _horizon.Add(_model.GenerateControlVariables()); // TODO // (_horizon[_horizonSize - 2]);
+            _horizon.Add(_horizon[_horizonSize - 2]);
         }
 
         private void UpdateHorizon2()
         {
             _horizon.RemoveAt(0);
             _horizon.Add(_model.GenerateControlVariables());
-        }
-
-        private List<Double> RungeKuttha(List<Double> stateVariables, List<Double> controlVariables)
-        {
-            var k1 = _model.StateFunction(stateVariables, controlVariables);
-            var k2 = _model.StateFunction(Add(stateVariables, Multiply(0.5 * H_STEP_SIZE, k1)), controlVariables);
-            var k3 = _model.StateFunction(Add(stateVariables, Multiply(0.5 * H_STEP_SIZE, k2)), controlVariables);
-            var k4 = _model.StateFunction(Add(stateVariables, Multiply(H_STEP_SIZE, k3)), controlVariables);
-
-            return Add(stateVariables, Multiply(H_STEP_SIZE / 6.0, (Add(k1, Add(Multiply(2, k2), Add(Multiply(2, k3), k4))))));
-        }
-
-        private static List<Double> Multiply(Double variable, List<Double> vector)
-        {
-            var result = new List<Double>(vector);
-            var ARRAY_SIZE = vector.Count;
-            
-            for (int i = 0; i < ARRAY_SIZE ; ++i)
-            {
-                result[i] = result[i] * variable;
-            }
-
-            return result;
-        }
-
-        private static List<Double> Add(List<Double> a1, List<Double> a2)
-        {
-            var result = new List<Double>(a1);
-            var ARRAY_SIZE = a1.Count;
-
-            for (int i = 0; i < ARRAY_SIZE; ++i)
-            {
-                result[i] = result[i] + a2[i];
-            }
-
-            return result;
         }
 
         private static string FormatDouble(Double value)

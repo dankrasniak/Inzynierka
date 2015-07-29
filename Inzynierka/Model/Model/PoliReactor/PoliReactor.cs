@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning.Probability;
 
 namespace Inzynierka.Model.Model.PoliReactor
 {
     public class PoliReactor : IModel
     {
         private readonly List<Double> _initialState = new List<Double>() {0.01, 0.01, 0.01, 0.01}; //{ 5.506774, 0.132906, 0.0019752, 49.38182 };
-        private readonly Double _setpoint = 25000.5;
+        private Double _setpoint = 25000.5;
         private readonly Double _commandingValue = 0.0;
-        private double H_STEP_SIZE = 0.001; // TODO Verify
+        private double H_STEP_SIZE;
         private double _externalDiscretization = 0.001;
         private double _internalDiscretization = 0.0001;
+        private double[] _minActionValues = new double[1];
+        private double[] _maxActionValues = new double[1];
 
         public PoliReactor(List<Property> properties)
         {
@@ -24,6 +27,8 @@ namespace Inzynierka.Model.Model.PoliReactor
                 Convert.ToDouble(properties.Find(p => p.Name.Equals("S0V4")).Value)
             };
             _commandingValue = Convert.ToDouble(properties.Find(p => p.Name.Equals("CommandingValue")).Value);
+            _minActionValues[0] = Convert.ToDouble(properties.Find(p => p.Name.Equals("MinActionValue")).Value);
+            _maxActionValues[0] = Convert.ToDouble(properties.Find(p => p.Name.Equals("MaxActionValue")).Value);
         }
 
         public List<Double> StateFunction2(List<Double> stateVariables, List<Double> controlVariables)
@@ -78,7 +83,7 @@ namespace Inzynierka.Model.Model.PoliReactor
 
             /* New Cm */ result[0] = (-(kp + kfm)*Cm*P0 + F*(Cmin - Cm)/V);
 
-            /* New C1 */ result[1] = (-kI * C1 + (controlVariables[0] * Clin - F * C1) / V); // (controlVariables[0] * 80.0  -10.10225 * C1);
+            /* New C1 */ result[1] = (-kI * C1 + (controlVariables[0] * Clin - F * C1) / V);
 
             /* New D0 */ result[2] = ((0.5*kTc + kTd)*P0*P0 + kfm*Cm*P0 - F*D0/V);
 
@@ -174,6 +179,28 @@ namespace Inzynierka.Model.Model.PoliReactor
         {
             //throw new NotImplementedException();
             return (-1)*Math.Pow(GetDiscrepancy(state), 2) / _setpoint; //GetValue(state)[0];
+        }
+
+        public List<Double> MeddleWithGoalAndStartingState()
+        {
+            var rand = new ASampler();
+            _setpoint = rand.Next(38000 - 25000) + 25000.5;
+            var state = GetInitialState();
+            state[0] = rand.NextDouble() * 5.506774;
+            state[1] = rand.NextDouble() * 0.132906;
+            state[2] = rand.NextDouble() * 0.0019752;
+            state[3] = rand.NextDouble() * 49.38182;
+            return state;
+        }
+
+        public double[] MinActionValues()
+        {
+            return _minActionValues;
+        }
+
+        public double[] MaxActionValues()
+        {
+            return _maxActionValues;
         }
     }
 }

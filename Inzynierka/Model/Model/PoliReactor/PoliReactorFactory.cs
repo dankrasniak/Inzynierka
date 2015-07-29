@@ -19,8 +19,10 @@ namespace Inzynierka.Model.Model.PoliReactor
             Properties.Add(new Property("S0V2", 0.01, "Wartość 2 stanu poczatkowego reaktora.", 0.0, 1000));
             Properties.Add(new Property("S0V3", 0.01, "Wartość 3 stanu poczatkowego reaktora.", 0.0, 1000));
             Properties.Add(new Property("S0V4", 0.01, "Wartość 4 stanu poczatkowego reaktora.", 0.0, 1000));
-            Properties.Add(new Property("CommandingValue", 0.0, "Pierwsza generowana wartość sterująca.", 0.0, 1000));
             Properties.Add(new Property("Setpoint", 25000.5, "Wartość, do której powinna zmierzać wartość wyjściowa reaktora.", 0.0, 50000.0));
+            Properties.Add(new Property("CommandingValue", 0.0, "Pierwsza generowana wartość sterująca.", 0.0, 1000));
+            Properties.Add(new Property("MinActionValue", 0.0, "Minimalna dopuszczalna wartość sterująca.", 0.0, 1000));
+            Properties.Add(new Property("MaxActionValue", 5.0, "Maxymalna dopuszczalna wartość sterująca.", 0.0, 1000));
         }
 
         public override IModel CreateModel(List<Property> properties)
