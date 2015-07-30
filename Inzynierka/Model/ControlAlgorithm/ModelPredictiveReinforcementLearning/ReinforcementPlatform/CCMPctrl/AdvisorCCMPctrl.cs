@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Windows.Documents;
 using Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning.Computing;
 using Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning.Neural;
@@ -28,6 +29,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
         protected readonly int TimesToAdjust;   // ile razy próbować poprawić horyzont
         protected readonly int TimesToTeach;    // ile razy uczyć sieć co iterację
         protected readonly int IterationsLimit;    // max czasu na jeden epizod
+        protected readonly int IterationLimitOptimisation; // max itracji na jedną próbe optymalizacji przyszłego sterowania
         #endregion 
 
         protected int TimeIndex;                // indeks czasowy bieżącego zdarzenia 
@@ -55,8 +57,8 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
             _model = model;
 
             HORIZON_SIZE = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("Horizon")).Value);
-            Vsize = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("Neural Network Layers Number")).Value);
-            BetaV = Convert.ToDouble(properties.Find(p => p.Name.Equals("Scalar")).Value);
+            Vsize = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("Neurons Number")).Value);
+            BetaV = Convert.ToDouble(properties.Find(p => p.Name.Equals("BetaV")).Value);
             Gamma = Convert.ToDouble(properties.Find(p => p.Name.Equals("Discount")).Value);
             StartingActionsValue = Convert.ToDouble(properties.Find(p => p.Name.Equals("CommandingValue")).Value);
             Sigma = Convert.ToDouble(properties.Find(p => p.Name.Equals("Sigma")).Value);
@@ -66,6 +68,8 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
             var internalDiscretization =
                 Convert.ToDouble(properties.Find(p => p.Name.Equals("InternalDiscretization")).Value);
 	        var TimeLimit = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("TimeLimit")).Value);
+            TimesToTeach = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("TimesToTeach")).Value);
+            IterationLimitOptimisation = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("OptimisationIterationLimit")).Value);
 
             _logger = new LogIt("", loggedValues);
             _model.SetDiscretizations(externalDiscretization, internalDiscretization);
@@ -81,7 +85,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
             MaxAction = new Vector(_model.MaxActionValues());
 
             double[] stateAverage = { 0.0, 0.0, 0.0, 0.0, 0.0 };// TODO Assess the values
-            double[] stateStandardDeviation = { 1.0, 1.0, 1.0, 1.0, 1.0 };// TODO Assess the values
+            double[] stateStandardDeviation = { 2.0, 0.8, 0.8, 3.0, 4.0 };// TODO Assess the values
 
             Init(stateAverage, stateStandardDeviation, MinAction.Table, Vsize);
 	    }
@@ -164,6 +168,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
         // system przeszedł do następnego stanu (należy zignorować reward) 
 		public void ThisHappened(double[] nextState)
 		{
+            Thread.Sleep(100);
 		    var reset = false;
             if (ModelIsStateAcceptable(new Vector(nextState)))
             {
@@ -211,7 +216,12 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
         {
             if (ModelIsStateAcceptable(nextState))
                 return _model.GetReward(nextState.Table.ToList());
-            return 0; 
+            return ModelPenalty(); 
+        }
+
+        private double ModelPenalty()
+        {
+            return -20.0;
         }
 
         protected Vector ModelNextState(Vector state, Vector action)
@@ -238,10 +248,10 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
                 if (!ModelIsStateAcceptable(stateTmp))
                 {
                     //NextEpisode();
-                    for (int j = i; j < h; ++j)
+                    for (int j = i+1; j < h; ++j)
                     {
                         next_states[j] = new Vector(4, 0.0); // TODO
-                        value -= 2.0;
+                        //value -= 2.0;
                         //gammai *= Gamma;
                     }
                     return value; // TODO
@@ -263,17 +273,19 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
         {
             var modifiedActions = new Vector[HORIZON_SIZE];
             var newNextStates = new Vector[HORIZON_SIZE];
+            double sigmaDiscount;
 
             #region Modify the Action vector
 
             for (int i = 0; i < HORIZON_SIZE; i++)
             {
                 modifiedActions[i] = currentActions[i].Clone();
+                sigmaDiscount = (double)(i + 1)/HORIZON_SIZE;
                 // < MinAction ; _action + Rand ; MaxAction >
                 for (int j = 0; j < modifiedActions[i].Dimension; j++)
                 {
                     modifiedActions[i][j] = Math.Min(
-                        Math.Max(MinAction[j], modifiedActions[i][j] + Sampler.SampleFromNormal(0, sigma)),
+                        Math.Max(MinAction[j], modifiedActions[i][j] + Sampler.SampleFromNormal(0, sigma) * sigmaDiscount),
                         MaxAction[j]);
                 }
             }

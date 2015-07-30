@@ -18,20 +18,22 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
             Description = "Opis algorytmu uczenia maszynowego wykorzystującego sterowanie predykcyjnege.";
 
             Properties = new List<Property>();
-            Properties.Add(new Property("Horizon", 10, "Długość horyzontu", 1, 100));
-            Properties.Add(new Property("Neural Network Layers Number", 35, "Liczba warstw sieci neuronowej.", 1, 1000));
-            Properties.Add(new Property("Scalar", 0.01, "Skalar stosowany przy gradiencie dodawanym do wag sieci neuronowej.", 0.0, 10.0));
-            Properties.Add(new Property("Discount", 0.8, "Wartość dyskonta stosowanego przy funkcji wartości stanu.", 0.0, 1.0));
+            Properties.Add(new Property("Horizon", 5, "Długość horyzontu", 1, 100));
+            Properties.Add(new Property("Neurons Number", 50, "Liczba neuronów w sieci neuronowej.", 1, 1000));
+            Properties.Add(new Property("BetaV", 0.001, "Skalar stosowany przy gradiencie dodawanym do wag sieci neuronowej.", 0.0, 10.0));
+            Properties.Add(new Property("Discount", 0.95, "Wartość dyskonta stosowanego przy funkcji wartości stanu.", 0.0, 1.0));
             Properties.Add(new Property("CommandingValue", 0.01, "Pierwsza generowana wartość sterująca.", 0.0, 1000));
-            Properties.Add(new Property("Sigma", 0.001, "Wartość odchylenia standardowego.", 0.0, 1000));
-            Properties.Add(new Property("InternalDiscretization", 0.0001, "Wartość kroku reprezentującego czas wewnątrze funkcji stanu.", 0.0, 100.0));
-            Properties.Add(new Property("ExternalDiscretization", 0.005, "Wartość kroku reprezentującego czas trwania jednej wartości sterującej", 0.0, 100.0));
+            Properties.Add(new Property("Sigma", 1, "Wartość odchylenia standardowego.", 0.0, 1000));
+            Properties.Add(new Property("InternalDiscretization", 0.01, "Wartość kroku reprezentującego czas wewnątrze funkcji stanu.", 0.0, 100.0));
+            Properties.Add(new Property("ExternalDiscretization", 0.1, "Wartość kroku reprezentującego czas trwania jednej wartości sterującej", 0.0, 100.0));
             Properties.Add(new Property("TimesToAdjust", 10, "Ilość razy ile ma mieć miejsce próba poprawienia wartości sterujących na horyzoncie.", 1, 1000));
             Properties.Add(new Property("TimesToTeach", 10, "Ilość razy ile ma mieć miejsce nauka sieci neuronowej, co iterację, na podstawie uzyskanej bazy wiedzy.", 1, 1000));
             Properties.Add(new Property("TimeLimit", 10, "Limit czasu na jeden epizod.", 1, 1000));
+            Properties.Add(new Property("OptimisationIterationLimit", 15, "Limit iteracji na jedną akcję opltyamlizacyjną.", 1, 1000));
 
             LoggedValues = new List<LoggedValue>();
             LoggedValues.Add(new LoggedValue(Name, "Wartość wyjściowa", false));
+            LoggedValues.Add(new LoggedValue(Name, "Wartość wejściowa", false));
             LoggedValues.Add(new LoggedValue(Name, "Wartość wejściowa", false));
             //LoggedValues.Add(new LoggedValue(Name, , true));
         }

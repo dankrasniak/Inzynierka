@@ -14,9 +14,9 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
         private List<Double> _state;
         private List<List<Double>> _horizon;
         private readonly int _horizonSize;
-        private int _iterationNr;
+        private int _iterationNumExternal;
         private int _episodeNr;
-        private readonly int _iterationsLimit;    // max czasu na jeden epizod
+        private readonly int _iterationsLimit;   // max czasu na jeden epizod
         private readonly double[] _minAction;    // min sterowania 
         private readonly double[] _maxAction;    // max sterowania
 
@@ -34,6 +34,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             var internalDiscretization =
                 Convert.ToDouble(properties.Find(p => p.Name.Equals("InternalDiscretization")).Value);
             var TimeLimit = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("TimeLimit")).Value);
+            _iterationLimitOptimisation = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("OptimisationIterationLimit")).Value);
 
             _iterationsLimit = (int)(TimeLimit / externalDiscretization);
 
@@ -44,7 +45,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             _maxAction = _model.MaxActionValues();
 
             GenerateHorizon();
-            _iterationNr = 0;
+            _iterationNumExternal = 0;
             _episodeNr = 0;
         }
 
@@ -60,7 +61,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
 
         public Data GetValueTMP()
         {
-            if (_iterationNr++ > _iterationsLimit)
+            if (_iterationNumExternal++ > _iterationsLimit)
                 NextEpisode();
 
             var controlVariables = GetControlVariables();
@@ -79,14 +80,14 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             var temp = result.Aggregate("", (current, add) => current + add);
             _logger.Log("Wartość wyjściowa", temp);
 
-            return new Data() { Values = result, IterationNumber = _iterationNr, EpisodeNumber = _episodeNr }; // TODO
+            return new Data() { Values = result, IterationNumber = _iterationNumExternal, EpisodeNumber = _episodeNr }; // TODO
         }
 
         private void NextEpisode()
         {
             _state = new List<double>(_model.MeddleWithGoalAndStartingState());
             GenerateHorizon();
-            _iterationNr = 0;
+            _iterationNumExternal = 0;
             ++_episodeNr;
         }
 
@@ -110,19 +111,20 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
         private double _sigma;                  // Standard deviation
         private readonly double _startSigma;
         private int _phi;                       // Number of times the child specimen was chosen over the parent specimen in the last cicle of M iterations
-        private int _iterationNum;
+        private int _iterationNumOptimisation;
+        private int _iterationLimitOptimisation;
 
         private void PrepareHorizont()
         {
             UpdateHorizon();
 
             _phi = 0;
-            _iterationNum = 0;
+            _iterationNumOptimisation = 0;
             _sigma = _startSigma;
 
             while (!IsFinished())
             {
-                ++_iterationNum;
+                ++_iterationNumOptimisation;
                 NextIteration();
             }
         }
@@ -174,15 +176,17 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
         {
             var modifiedHorizon = new List<List<Double>>();
             var CONTROL_VARIABLES_NR = (horizon[0]).Count;
+            double sigmaDiscount;
 
             for (int i = 0; i < _horizonSize; ++i)
             {
                 modifiedHorizon.Add(new List<Double>(horizon[i]));
+                sigmaDiscount = (double)(i + 1) / _horizonSize;
 
                 for (int j = 0; j < CONTROL_VARIABLES_NR; ++j)
                 {
                     modifiedHorizon[i][j] = Math.Min(
-                        Math.Max(_minAction[j], horizon[i][j] + _sigma * GetGaussian()),
+                        Math.Max(_minAction[j], horizon[i][j] + _sigma * sigmaDiscount * GetGaussian()),
                         _maxAction[j]);
                 }
             }
@@ -192,12 +196,12 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
 
         private bool IsFinished()
         {
-            return _sigma < _sigmaMin;
+            return _sigma < _sigmaMin || _iterationNumOptimisation > _iterationLimitOptimisation;
         }
 
         private void UpdateSigma()
         {
-            if (_iterationNum % M != 0)
+            if (_iterationNumOptimisation % M != 0)
                 return;
 
             if ((double)_phi / M < 0.2)
