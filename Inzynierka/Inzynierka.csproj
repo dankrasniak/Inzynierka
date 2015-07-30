@@ -144,6 +144,7 @@
     <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcementLearning\Neural\MLPerceptron2.cs" />
     <Compile Include="Model\ControlAlgorithm\ModelPredictiveReinforcementLearning\Probability\Sampler.cs" />
     <Compile Include="Model\ControlAlgorithm\PredictionControl\PredictionControlFactory.cs" />
+    <Compile Include="Model\Data.cs" />
     <Compile Include="Model\Logger\LoggedValue.cs" />
     <Compile Include="Model\Model\AModelFactory.cs" />
     <Compile Include="Model\Model\IModel.cs" />

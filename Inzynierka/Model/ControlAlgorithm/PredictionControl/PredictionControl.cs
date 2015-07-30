@@ -25,8 +25,8 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
 
             // Variables from properties list
             M = (int) Convert.ToDouble(properties.Find(p => p.Name.Equals("M")).Value);
-            _startSigma = Convert.ToDouble(properties.Find(p => p.Name.Equals("StartSigma")).Value);
             _horizonSize = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("Horizon")).Value);
+            _startSigma = Convert.ToDouble(properties.Find(p => p.Name.Equals("StartSigma")).Value);
             _sigmaMin = Convert.ToDouble(properties.Find(p => p.Name.Equals("SigmaMin")).Value);
             var externalDiscretization =
                 Convert.ToDouble(properties.Find(p => p.Name.Equals("ExternalDiscretization")).Value);
@@ -141,27 +141,6 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             UpdateSigma();
         }
 
-        private void NextIteration2()
-        {
-
-            var modifiedHorizon = ModifyHorizon(_horizon);
-
-            var currentHorizonState = GetFinalState(_state, _horizon);
-            var newHorizonState = GetFinalState(_state, modifiedHorizon);
-
-            var currentHorizonValue = _model.GetDiscrepancy(currentHorizonState);
-            var newHorizonValue = _model.GetDiscrepancy(newHorizonState);
-
-            _logger.Log("Possible states", "Possible states: " + FormatDouble(currentHorizonValue) + " VS: " + FormatDouble(newHorizonValue));
-
-            if (!_model.IsFirstBetter(currentHorizonState, newHorizonState))
-            {
-                _horizon = modifiedHorizon;
-                ++_phi;
-            }
-            UpdateSigma();
-        }
-
         private double GetHorizonValue(IEnumerable<List<double>> horizon)
         {
             var horizonValue = 0.0;
@@ -178,7 +157,6 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
                         horizonValue += ModelPenalty();
                     }
                 }
-                //horizonValue -= (i+1)*Math.Pow(_model.GetDiscrepancy(horizonStatesList[i]), 2);
             }
 
             return horizonValue;
@@ -203,7 +181,6 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
                     modifiedHorizon[i][j] = Math.Min(
                         Math.Max(_minAction[j], horizon[i][j] + _sigma * GetGaussian()),
                         _maxAction[j]);
-                    //Math.Abs(horizon[i][j] + _sigma * GetGaussian());
                 }
             }
 
@@ -233,16 +210,8 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
 
         private readonly Random _rand = new Random();
 
-        private double GetGaussian() // TODO Verify
+        private double GetGaussian()
         {
-//            double u1 = _rand.NextDouble(); //these are uniform(0,1) random doubles
-//            double u2 = _rand.NextDouble();
-//            double randStdNormal = Math.Sqrt(-2.0 * Math.Log(u1)) *
-//                         Math.Sin(2.0 * Math.PI * u2); //random normal(0,1)
-//            //double randNormal =
-//            //             mean + stdDev * randStdNormal; //random normal(mean,stdDev^2)
-//            return randStdNormal;
-
             double z = -Math.Log(1.0 - _rand.NextDouble());
             double alpha = _rand.NextDouble() * Math.PI * 2;
             double norm = Math.Sqrt(z * 2) * Math.Cos(alpha);
@@ -250,12 +219,6 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
         }
 
         #endregion EvoAlg
-
-        private List<Double> GetFinalState(List<double> initialState, IEnumerable<List<double>> horizon)
-        {
-            throw new NotSupportedException();
-            //return horizon.Aggregate(initialState, RungeKuttha);
-        }
 
         private List<List<Double>> GetHorizonStatesList(IEnumerable<double> initialState, IEnumerable<List<double>> horizon)
         {
@@ -274,12 +237,6 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
         {
             _horizon.RemoveAt(0);
             _horizon.Add(_horizon[_horizonSize - 2]);
-        }
-
-        private void UpdateHorizon2()
-        {
-            _horizon.RemoveAt(0);
-            _horizon.Add(_model.GenerateControlVariables());
         }
 
         private static string FormatDouble(Double value)

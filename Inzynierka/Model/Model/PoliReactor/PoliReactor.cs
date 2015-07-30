@@ -8,7 +8,7 @@ namespace Inzynierka.Model.Model.PoliReactor
     {
         private readonly List<Double> _initialState = new List<Double>() {0.01, 0.01, 0.01, 0.01}; //{ 5.506774, 0.132906, 0.0019752, 49.38182 };
         private Double _setpoint = 25000.5;
-        private readonly Double _commandingValue = 0.0;
+        private readonly Double _commandingValue;
         private double H_STEP_SIZE;
         private double _externalDiscretization = 0.001;
         private double _internalDiscretization = 0.0001;
@@ -31,30 +31,7 @@ namespace Inzynierka.Model.Model.PoliReactor
             _maxActionValues[0] = Convert.ToDouble(properties.Find(p => p.Name.Equals("MaxActionValue")).Value);
         }
 
-        public List<Double> StateFunction2(List<Double> stateVariables, List<Double> controlVariables)
-        {
-            var result = new List<Double>(stateVariables);
-
-            var Cm = stateVariables[0];
-            var C1 = stateVariables[1];
-            var D0 = stateVariables[2];
-            var D1 = stateVariables[3];
-
-            var P0 = Math.Sqrt((2 * 0.58 * 0.10225 * C1) / (1.093 * Math.Pow(10, 11) + 1.3281 * Math.Pow(10, 10)));
-
-
-            /* New Cm */result[0] = (-(2.4952 * Math.Pow(10, 6) + 2.4522 * Math.Pow(10, 3)) * Cm * P0 + 1.0 * (6.0 - Cm) / 0.1);
-
-            /* New C1 */result[1] = (-0.10225 * C1 + (controlVariables[0] * 8.0 - 1.0 * C1) / 0.1);
-
-            /* New D0 */result[2] = ((0.5 * 1.3281 * Math.Pow(10, 10) + 1.093 * Math.Pow(10, 11)) * Math.Pow(P0, 2) + 2.4522 * Math.Pow(10, 3) * Cm * P0 - (1.0 * D0) / 0.1);
-
-            /* New D1 */result[3] = (100.12 * (2.4952 * Math.Pow(10, 6) + 2.4522 * Math.Pow(10, 3)) * Cm * P0 - (1.0 * D1) / 0.1);
-
-            return result;
-        }
-
-        private List<Double> StateFunction3(List<Double> stateVariables, List<Double> controlVariables)
+        private List<Double> InnerStateFunction(List<Double> stateVariables, List<Double> controlVariables)
         {
             var result = new List<Double>(stateVariables);
 
@@ -104,10 +81,10 @@ namespace Inzynierka.Model.Model.PoliReactor
 
         private List<Double> RungeKuttha(List<Double> stateVariables, List<Double> controlVariables)
         {
-            var k1 = StateFunction3(stateVariables, controlVariables);
-            var k2 = StateFunction3(Add(stateVariables, Multiply(0.5 * H_STEP_SIZE, k1)), controlVariables);
-            var k3 = StateFunction3(Add(stateVariables, Multiply(0.5 * H_STEP_SIZE, k2)), controlVariables);
-            var k4 = StateFunction3(Add(stateVariables, Multiply(H_STEP_SIZE, k3)), controlVariables);
+            var k1 = InnerStateFunction(stateVariables, controlVariables);
+            var k2 = InnerStateFunction(Add(stateVariables, Multiply(0.5 * H_STEP_SIZE, k1)), controlVariables);
+            var k3 = InnerStateFunction(Add(stateVariables, Multiply(0.5 * H_STEP_SIZE, k2)), controlVariables);
+            var k4 = InnerStateFunction(Add(stateVariables, Multiply(H_STEP_SIZE, k3)), controlVariables);
 
             return Add(stateVariables, Multiply(H_STEP_SIZE / 6.0, (Add(k1, Add(Multiply(2, k2), Add(Multiply(2, k3), k4))))));
         }
@@ -154,12 +131,6 @@ namespace Inzynierka.Model.Model.PoliReactor
             return Math.Abs(_setpoint - GetValue(stateVariables)[0]); // TODO Czy musi być Abs
         }
 
-        public Boolean IsFirstBetter(List<Double> state1, List<Double> state2) // TODO Delete
-        {
-            return (Math.Abs(_setpoint - GetValue(state1)[0]) <
-                Math.Abs(_setpoint - GetValue(state2)[0])) ;
-        }
-
         public List<Double> GenerateControlVariables()
         {
             return new List<Double>() { _commandingValue }; // { 0.016783 };
@@ -177,8 +148,7 @@ namespace Inzynierka.Model.Model.PoliReactor
 
         public Double GetReward(List<Double> state)
         {
-            //throw new NotImplementedException();
-            return (-1)*Math.Pow(GetDiscrepancy(state), 2) / _setpoint; //GetValue(state)[0];
+            return (-1)*Math.Pow(GetDiscrepancy(state), 2) / _setpoint;
         }
 
         public List<Double> MeddleWithGoalAndStartingState()
