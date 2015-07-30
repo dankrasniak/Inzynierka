@@ -52,6 +52,8 @@ namespace Inzynierka.View
             simulationDataContext.Model = dc.ModelFactory.CreateModel(dc.PropertiesM);
             simulationDataContext.Algorithm = dc.AlgorithmFactory.CreateAlgorithm(simulationDataContext.Model,
                 dc.PropertiesA, dc.Log);
+            simulationDataContext.PropertiesM = dc.PropertiesM;
+            simulationDataContext.PropertiesA = dc.PropertiesA;
 
             simulation.Show();
             this.Close();

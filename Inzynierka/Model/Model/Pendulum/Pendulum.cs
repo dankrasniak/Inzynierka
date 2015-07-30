@@ -30,7 +30,7 @@ namespace Inzynierka.Model.Model.Pendulum
             };
             _commandingValue = Convert.ToDouble(properties.Find(p => p.Name.Equals("CommandingValue")).Value); // TODO
             _minActionValues[0] = Convert.ToDouble(properties.Find(p => p.Name.Equals("MinActionValue")).Value);
-            _maxActionValues[0] = Convert.ToDouble(properties.Find(p => p.Name.Equals("MaxActionValues")).Value);
+            _maxActionValues[0] = Convert.ToDouble(properties.Find(p => p.Name.Equals("MaxActionValue")).Value);
         }
 
         public List<Double> StateFunctionPart(List<Double> stateVariables, List<Double> controlVariables)

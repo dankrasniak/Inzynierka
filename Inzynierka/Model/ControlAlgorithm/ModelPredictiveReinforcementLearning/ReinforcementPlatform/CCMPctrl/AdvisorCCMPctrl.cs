@@ -31,6 +31,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
         #endregion 
 
         protected int TimeIndex;                // indeks czasowy bieżącego zdarzenia 
+        private int _episodeNr;
         protected readonly ArrayList AllVisits; // wszystkie dotychczasowe zdarzenia 
         protected AVisit Visit;                 // zdarzenie wylosowane
 
@@ -70,6 +71,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
             _model.SetDiscretizations(externalDiscretization, internalDiscretization);
 
             TimeIndex = 0;
+	        _episodeNr = 0;
             AllVisits = new ArrayList();
             Sampler = new ASampler();
             IterationsLimit = (int) (TimeLimit / externalDiscretization);
@@ -112,7 +114,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
         }
 
         /// <returns>The value returned by the model.</returns>
-        public List<Double> GetValueTMP() 
+        public Data GetValueTMP() 
         {
             if (TimeIndex > IterationsLimit)
                 NextEpisode();
@@ -121,13 +123,14 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
             AdviseAction(ref currentAction);
             ThisHappened(_model.StateFunction(State.Table.ToList(), currentAction.ToList()).ToArray());
 
-            return _model.GetValue(State.Table.ToList());
+            return new Data() { Values = _model.GetValue(State.Table.ToList()), IterationNumber = TimeIndex, EpisodeNumber = _episodeNr }; // TODO
         }
 
         /// <summary>Prepares the model for the next epizode. The Approximator stays unchanged.</summary>
         public void NextEpisode()
         {
             TimeIndex = 0;
+            ++_episodeNr;
 
             StartInState(_model.MeddleWithGoalAndStartingState().ToArray());
 

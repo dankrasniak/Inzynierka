@@ -1,4 +1,5 @@
-﻿using Inzynierka.Model.ControlAlgorithm;
+﻿using Inzynierka.Model;
+using Inzynierka.Model.ControlAlgorithm;
 using Inzynierka.Model.Model;
 using System;
 using System.Collections.Generic;
@@ -40,6 +41,38 @@ namespace Inzynierka.ViewModel
 
         public IModel Model { get; set; }
 
+        #region Properties
+        private List<Property> _propertiesA;
+
+        public List<Property> PropertiesA
+        {
+            get
+            {
+                return _propertiesA;
+            }
+            set
+            {
+                _propertiesA = value;
+                OnPropertyChanged("PropertiesA");
+            }
+        }
+
+        private List<Property> _propertiesM;
+
+        public List<Property> PropertiesM
+        {
+            get
+            {
+                return _propertiesM;
+            }
+            set
+            {
+                _propertiesM = value;
+                OnPropertyChanged("PropertiesM");
+            }
+        }
+        #endregion Properties
+
         public IAlgorithm Algorithm { get; set; }
 
         public Boolean Loop { get; set; }
@@ -79,10 +112,13 @@ namespace Inzynierka.ViewModel
             StepButton = new ButtonCommand(
                 () =>
                 { // Step of a simulation
-                    Value = Algorithm.GetValueTMP();
+                    var data = Algorithm.GetValueTMP();
+                    Value = data.Values;
                     OnPropertyChanged("Value");
-                    ++TimeIndex;
+                    TimeIndex = data.IterationNumber;
                     OnPropertyChanged("TimeIndex");
+                    EpisodeNumber = data.EpisodeNumber;
+                    OnPropertyChanged("EpisodeNumber");
                 },
                 () =>
                 { // Not playing?
@@ -124,7 +160,6 @@ namespace Inzynierka.ViewModel
             );
             #endregion ButtonInitialisation
 
-            TimeIndex = 0;
             PendulumX = 325.0;
 
             #region Thread
@@ -144,10 +179,13 @@ namespace Inzynierka.ViewModel
             {
                 while (Loop)
                 {
-                    Value = Algorithm.GetValueTMP();
+                    var data = Algorithm.GetValueTMP();
+                    Value = data.Values;
                     OnPropertyChanged("Value");
-                    ++TimeIndex;
+                    TimeIndex = data.IterationNumber;
                     OnPropertyChanged("TimeIndex");
+                    EpisodeNumber = data.EpisodeNumber;
+                    OnPropertyChanged("EpisodeNumber");
                 }
                 while (Faster)
                 {
@@ -160,10 +198,13 @@ namespace Inzynierka.ViewModel
                     Algorithm.GetValueTMP();
                     Algorithm.GetValueTMP();
                     Algorithm.GetValueTMP();
-                    Value = Algorithm.GetValueTMP();
+                    var data = Algorithm.GetValueTMP();
+                    Value = data.Values;
                     OnPropertyChanged("Value");
-                    TimeIndex += 10;
+                    TimeIndex = data.IterationNumber;
                     OnPropertyChanged("TimeIndex");
+                    EpisodeNumber = data.EpisodeNumber;
+                    OnPropertyChanged("EpisodeNumber");
                 }
                 System.Threading.Thread.Sleep(1000);
             }

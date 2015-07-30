@@ -15,6 +15,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
         private List<List<Double>> _horizon;
         private readonly int _horizonSize;
         private int _iterationNr;
+        private int _episodeNr;
         private readonly int _iterationsLimit;    // max czasu na jeden epizod
         private readonly double[] _minAction;    // min sterowania 
         private readonly double[] _maxAction;    // max sterowania
@@ -44,6 +45,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
 
             GenerateHorizon();
             _iterationNr = 0;
+            _episodeNr = 0;
         }
 
         private void GenerateHorizon()
@@ -56,7 +58,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             }
         }
 
-        public List<Double> GetValueTMP()
+        public Data GetValueTMP()
         {
             if (_iterationNr++ > _iterationsLimit)
                 NextEpisode();
@@ -77,7 +79,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             var temp = result.Aggregate("", (current, add) => current + add);
             _logger.Log("Wartość wyjściowa", temp);
 
-            return result;
+            return new Data() { Values = result, IterationNumber = _iterationNr, EpisodeNumber = _episodeNr }; // TODO
         }
 
         private void NextEpisode()
@@ -85,6 +87,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             _state = new List<double>(_model.MeddleWithGoalAndStartingState());
             GenerateHorizon();
             _iterationNr = 0;
+            ++_episodeNr;
         }
 
         private List<Double> GetControlVariables()
