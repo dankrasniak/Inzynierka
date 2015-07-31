@@ -172,5 +172,15 @@ namespace Inzynierka.Model.Model.PoliReactor
         {
             return _maxActionValues;
         }
+
+        public double Penalty()
+        {
+            return -_setpoint;
+        }
+
+        public List<Double> TurnStateToNNAcceptable(List<Double> state)
+        {
+            return state; // TODO
+        }
     }
 }

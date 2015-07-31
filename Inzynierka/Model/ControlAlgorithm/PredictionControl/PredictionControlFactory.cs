@@ -24,7 +24,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             Properties.Add(new Property("InternalDiscretization", 0.001, "Wartość kroku reprezentującego czas wewnątrze funkcji stanu.", 0.0, 100.0));
             Properties.Add(new Property("ExternalDiscretization", 0.01, "Wartość kroku reprezentującego czas trwania jednej wartości sterującej", 0.0, 100.0));
             Properties.Add(new Property("TimeLimit", 15, "Limit czasu na jeden epizod.", 1, 1000));
-            Properties.Add(new Property("OptimisationIterationLimit", 15, "Limit iteracji na jedną akcję opltyamlizacyjną.", 1, 1000));
+            Properties.Add(new Property("OptimisationIterationLimit", 100, "Limit iteracji na jedną akcję opltyamlizacyjną.", 1, 1000));
 
             LoggedValues = new List<LoggedValue>();
             LoggedValues.Add(new LoggedValue(Name, "Wartość wyjściowa", false));

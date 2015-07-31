@@ -24,17 +24,18 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
             Properties.Add(new Property("Discount", 0.95, "Wartość dyskonta stosowanego przy funkcji wartości stanu.", 0.0, 1.0));
             Properties.Add(new Property("CommandingValue", 0.01, "Pierwsza generowana wartość sterująca.", 0.0, 1000));
             Properties.Add(new Property("Sigma", 1, "Wartość odchylenia standardowego.", 0.0, 1000));
+            Properties.Add(new Property("SigmaMin", 0.01, "Wartość odchylenia standardowego.", 0.0, 1000));
             Properties.Add(new Property("InternalDiscretization", 0.01, "Wartość kroku reprezentującego czas wewnątrze funkcji stanu.", 0.0, 100.0));
             Properties.Add(new Property("ExternalDiscretization", 0.1, "Wartość kroku reprezentującego czas trwania jednej wartości sterującej", 0.0, 100.0));
-            Properties.Add(new Property("TimesToAdjust", 10, "Ilość razy ile ma mieć miejsce próba poprawienia wartości sterujących na horyzoncie.", 1, 1000));
+            Properties.Add(new Property("TimesToAdjust", 100, "Ilość razy ile ma mieć miejsce próba poprawienia wartości sterujących na horyzoncie.", 1, 1000));
             Properties.Add(new Property("TimesToTeach", 10, "Ilość razy ile ma mieć miejsce nauka sieci neuronowej, co iterację, na podstawie uzyskanej bazy wiedzy.", 1, 1000));
             Properties.Add(new Property("TimeLimit", 10, "Limit czasu na jeden epizod.", 1, 1000));
-            Properties.Add(new Property("OptimisationIterationLimit", 15, "Limit iteracji na jedną akcję opltyamlizacyjną.", 1, 1000));
+            Properties.Add(new Property("TimesToAdjustPastActions", 30, "Ile razy ma być poprawiane przeszłe wartości sterujące.", 1, 1000));
 
             LoggedValues = new List<LoggedValue>();
             LoggedValues.Add(new LoggedValue(Name, "Wartość wyjściowa", false));
             LoggedValues.Add(new LoggedValue(Name, "Wartość wejściowa", false));
-            LoggedValues.Add(new LoggedValue(Name, "Wartość wejściowa", false));
+            LoggedValues.Add(new LoggedValue(Name, "Średnie Wartości nagród z 10 epizodów", false));
             //LoggedValues.Add(new LoggedValue(Name, , true));
         }
 

@@ -29,7 +29,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
         protected readonly int TimesToAdjust;   // ile razy próbować poprawić horyzont
         protected readonly int TimesToTeach;    // ile razy uczyć sieć co iterację
         protected readonly int IterationsLimit;    // max czasu na jeden epizod
-        protected readonly int IterationLimitOptimisation; // max itracji na jedną próbe optymalizacji przyszłego sterowania
+        protected int TimesToAdjustPastActions; // max itracji na jedną próbe optymalizacji przyszłego sterowania
         #endregion 
 
         protected int TimeIndex;                // indeks czasowy bieżącego zdarzenia 
@@ -43,6 +43,9 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
         protected Vector[] Actions;    // sterowania na horyzoncie 
         protected Vector[] NextStates; // następne stany na horyzoncie 
         protected double Vest;         // bieżąca ocena sterowań Actions 
+        protected double VestSum;      // suma ocen sterowań na przestrzeni jednego epizodu
+        protected double VestAv;       // średnia ocen sterowań na przestrzeni 10 ostatich epizodów
+        protected List<double> VestList; // Wartości ocen sterowań na przestrzeni ostatnich 10 epizodów 
 
         #region Ad. Biblioteka Programowa
 
@@ -50,6 +53,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
         protected LogIt _logger;
         protected double StartingActionsValue;
         protected readonly double Sigma;
+        protected double SigmaMin;
         #endregion
 
 	    public Advisor(IModel model, List<Property> properties, List<LoggedValue> loggedValues)
@@ -62,6 +66,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
             Gamma = Convert.ToDouble(properties.Find(p => p.Name.Equals("Discount")).Value);
             StartingActionsValue = Convert.ToDouble(properties.Find(p => p.Name.Equals("CommandingValue")).Value);
             Sigma = Convert.ToDouble(properties.Find(p => p.Name.Equals("Sigma")).Value);
+            SigmaMin = Convert.ToDouble(properties.Find(p => p.Name.Equals("SigmaMin")).Value);
             TimesToAdjust = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("TimesToAdjust")).Value);
             var externalDiscretization =
                 Convert.ToDouble(properties.Find(p => p.Name.Equals("ExternalDiscretization")).Value);
@@ -69,7 +74,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
                 Convert.ToDouble(properties.Find(p => p.Name.Equals("InternalDiscretization")).Value);
 	        var TimeLimit = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("TimeLimit")).Value);
             TimesToTeach = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("TimesToTeach")).Value);
-            IterationLimitOptimisation = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("OptimisationIterationLimit")).Value);
+            TimesToAdjustPastActions = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("TimesToAdjustPastActions")).Value);
 
             _logger = new LogIt("", loggedValues);
             _model.SetDiscretizations(externalDiscretization, internalDiscretization);
@@ -79,6 +84,8 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
             AllVisits = new ArrayList();
             Sampler = new ASampler();
             IterationsLimit = (int) (TimeLimit / externalDiscretization);
+	        VestSum = 0;
+            VestList = new List<double>(10);
 
             StartInState(_model.GetInitialState().ToArray());
             MinAction = new Vector(_model.MinActionValues());
@@ -133,6 +140,8 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
         /// <summary>Prepares the model for the next epizode. The Approximator stays unchanged.</summary>
         public void NextEpisode()
         {
+            VestSum /= TimeIndex;
+            UpdateVestList(VestSum);
             TimeIndex = 0;
             ++_episodeNr;
 
@@ -147,6 +156,23 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
             }
         }
 
+        protected void UpdateVestList(double VestSum)
+        {
+            var listLength = VestList.Count;
+            if (listLength < 10)
+            {
+                VestAv = (VestAv*listLength + VestSum)/(listLength + 1);
+                VestList.Add(VestSum);
+            }
+            else
+            {
+                VestAv = VestAv - VestList[0]/10 + VestSum/10;
+                VestList.RemoveAt(0);
+                VestList.Add(VestSum);
+            }
+            _logger.Log("Średnie Wartości nagród z 10 epizodów", VestAv);
+        }
+
 		public void StartInState(double[] state) 
 		{
             State = new Vector(state); 
@@ -157,8 +183,10 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
 		public void AdviseAction(ref double[] action)
 		{
             Vest = CalculateStateValue(State, Actions, ref NextStates);
-            for (int i = 0; i < TimesToAdjust; i++)
-                AdjustActions(State, Sigma, ref Actions, ref NextStates, ref Vest);
+            //for (int i = 0; i < TimesToAdjust; i++)
+            //    AdjustActions(State, Sigma, ref Actions, ref NextStates, ref Vest);
+            PrepareHorizon(TimesToAdjust, State, ref Actions, ref NextStates, ref Vest);
+		    VestSum += Vest;
 
             AllVisits.Add(new AVisit(TimeIndex++, State, Actions, NextStates)); 
             action = Actions[0].Table; 
@@ -192,12 +220,12 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
                 Vest = CalculateStateValue(Visit.State, Visit.Actions, ref Visit.NextStates); 
 
                 // Try to Adjust its actions
-                for (int i = 0; i < TimesToAdjust; i++)
-                    AdjustActions(Visit.State, Sigma, ref Visit.Actions, ref Visit.NextStates, ref Vest);
+                //for (int i = 0; i < TimesToAdjust; i++)
+                //    AdjustActions(Visit.State, Sigma, ref Visit.Actions, ref Visit.NextStates, ref Vest);
+                PrepareHorizon(TimesToAdjustPastActions, Visit.State, ref Visit.Actions, ref Visit.NextStates, ref Vest);
 
                 // Get the state value from the approximator & add calculated discrepancy to its weights(NN).
-                var networkInputVar = new Vector(new[] { Visit.State[0], Math.Sin(Visit.State[1]), Math.Cos(Visit.State[1]), Visit.State[2], Visit.State[3] });
-                V.Approximate(networkInputVar, ref Vval);
+                V.Approximate(new Vector(_model.TurnStateToNNAcceptable(Visit.State.Table.ToList()).ToArray()), ref Vval);
                 Vgrad[0] = Vval[0] - Vest;
                 V.BackPropagateGradient(Vgrad, ref VparamGrad);
                 
@@ -214,14 +242,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
 
         protected double ModelReward(Vector nextState)
         {
-            if (ModelIsStateAcceptable(nextState))
-                return _model.GetReward(nextState.Table.ToList());
-            return ModelPenalty(); 
-        }
-
-        private double ModelPenalty()
-        {
-            return -20.0;
+            return ModelIsStateAcceptable(nextState) ? _model.GetReward(nextState.Table.ToList()) : _model.Penalty();
         }
 
         protected Vector ModelNextState(Vector state, Vector action)
@@ -247,12 +268,9 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
                 value += gammai * ModelReward(stateTmp);
                 if (!ModelIsStateAcceptable(stateTmp))
                 {
-                    //NextEpisode();
                     for (int j = i+1; j < h; ++j)
                     {
                         next_states[j] = new Vector(4, 0.0); // TODO
-                        //value -= 2.0;
-                        //gammai *= Gamma;
                     }
                     return value; // TODO
                 }
@@ -260,16 +278,50 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
                 gammai *= Gamma; 
             }
 
-            var networkInputVar = new Vector(new[] { stateTmp[0], Math.Sin(stateTmp[1]), Math.Cos(stateTmp[1]), stateTmp[2], stateTmp[3] });
-            V.Approximate(networkInputVar, ref Vval); // stateTmp
+            V.Approximate(new Vector(_model.TurnStateToNNAcceptable(stateTmp.Table.ToList()).ToArray()), ref Vval);
             value += gammai * Vval[0];
             
             return value; 
         }
 
+        protected int Phi;
+        protected int IterationsNrOpti;
+        private readonly int M = 10;
+        private const double C1 = 0.82;
+        private const double C2 = 1.2;
+
+        protected void PrepareHorizon(int iterationLimit, Vector state, ref Vector[] currentActions, ref Vector[] currentNextStates, ref double stateValue)
+        {
+            Phi = 0;
+            IterationsNrOpti = 0;
+            var sigma = Sigma;
+
+            while (IterationsNrOpti < iterationLimit || sigma < SigmaMin)
+            {
+                ++IterationsNrOpti;
+                AdjustActions(state, ref sigma, ref currentActions, ref currentNextStates, ref stateValue);
+            }
+        }
+
+        protected void UpdateSigma(ref double sigma)
+        {
+            if (IterationsNrOpti % M != 0)
+                return;
+
+            if ((double)Phi / M < 0.2)
+            {
+                sigma *= C1;
+            }
+            else if ((double)Phi / M > 0.2)
+            {
+                sigma *= C2;
+            }
+            Phi = 0; // == 0.2
+        }
+
         /// <summary>Iteracja algorytmu (1+1) </summary>
         /// <returns>Zwraca, czy nastąpiła poprawa </returns>
-        protected void AdjustActions(Vector state, double sigma, ref Vector[] currentActions, ref Vector[] currentNextStates, ref double stateValue)
+        protected void AdjustActions(Vector state, ref double sigma, ref Vector[] currentActions, ref Vector[] currentNextStates, ref double stateValue)
         {
             var modifiedActions = new Vector[HORIZON_SIZE];
             var newNextStates = new Vector[HORIZON_SIZE];
@@ -300,9 +352,11 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
                 stateValue = stateNewValue; 
                 currentActions = modifiedActions;
                 currentNextStates = newNextStates;
+                ++Phi;
             }
-
             #endregion
+
+            UpdateSigma(ref sigma);
         }
     }
 }

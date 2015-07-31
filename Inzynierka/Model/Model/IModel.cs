@@ -27,5 +27,9 @@ namespace Inzynierka.Model.Model
         double[] MinActionValues();
 
         double[] MaxActionValues();
+
+        double Penalty();
+
+        List<Double> TurnStateToNNAcceptable(List<Double> state);
     }
 }

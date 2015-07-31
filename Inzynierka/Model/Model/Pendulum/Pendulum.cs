@@ -133,5 +133,22 @@ namespace Inzynierka.Model.Model.Pendulum
         {
             return _maxActionValues;
         }
+
+        public double Penalty()
+        {
+            return -20.0;
+        }
+
+        public List<Double> TurnStateToNNAcceptable(List<Double> state)
+        {
+            return new List<double>()
+            {
+                state[0],
+                Math.Sin(state[1]),
+                Math.Cos(state[1]),
+                state[2],
+                state[3]
+            };
+        }
     }
 }
