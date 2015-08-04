@@ -1,12 +1,12 @@
 ﻿using Inzynierka.Model;
 using Inzynierka.Model.ControlAlgorithm;
 using Inzynierka.Model.Model;
+using Inzynierka.Model.Model.Pendulum;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Windows.Input;
-using Inzynierka.Model.Model.Pendulum;
 
 namespace Inzynierka.ViewModel
 {
@@ -40,6 +40,14 @@ namespace Inzynierka.ViewModel
         public double PendulumT { get; set; }
 
         public IModel Model { get; set; }
+
+        private object _content = new View.Pendulum();
+
+        public object Content
+        {
+            get { return _content; }
+            set { _content = value; }
+        }
 
         #region Properties
         private List<Property> _propertiesA;

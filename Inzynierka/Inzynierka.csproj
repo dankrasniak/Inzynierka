@@ -159,6 +159,9 @@
     <Compile Include="View\NewSimulation.xaml.cs">
       <DependentUpon>NewSimulation.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\Visualisations\Pendulum.xaml.cs">
+      <DependentUpon>Pendulum.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\Settings.xaml.cs">
       <DependentUpon>Settings.xaml</DependentUpon>
     </Compile>
@@ -167,6 +170,9 @@
     </Compile>
     <Compile Include="View\Error.xaml.cs">
       <DependentUpon>Error.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Visualisations\PoliReactorCounter.xaml.cs">
+      <DependentUpon>PoliReactorCounter.xaml</DependentUpon>
     </Compile>
     <Page Include="ExpressionDark.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -199,6 +205,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="View\Visualisations\Pendulum.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\Settings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -208,6 +218,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Error.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Visualisations\PoliReactorCounter.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

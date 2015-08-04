@@ -18,9 +18,10 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
         protected Vector Vval;        // wektor zwracany przez ten aproksymator 
         protected Vector Vgrad;       // gradient na wyjściu aproksymatora V
         protected double BetaV;       // parametr kroku dla tego aproksymatora 
-        protected Vector VparamGrad; 
+        protected Vector VparamGrad;
 
-        #region parametry 
+        #region parametry
+        protected readonly int PREDICTION_HORIZON_SIZE;    // długość horyzontu predykcji // TODO
         protected readonly int HORIZON_SIZE;    // długość horyzontu
         protected readonly int Vsize;           // wielkość sieci neuronowej V
         protected double Gamma;                 // dyskonto 
@@ -61,6 +62,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
             _model = model;
 
             HORIZON_SIZE = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("Horizon")).Value);
+            PREDICTION_HORIZON_SIZE = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("PredictionHorizon")).Value); // TODO
             Vsize = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("Neurons Number")).Value);
             BetaV = Convert.ToDouble(properties.Find(p => p.Name.Equals("BetaV")).Value);
             Gamma = Convert.ToDouble(properties.Find(p => p.Name.Equals("Discount")).Value);

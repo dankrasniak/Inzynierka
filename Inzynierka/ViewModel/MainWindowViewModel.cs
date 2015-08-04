@@ -72,25 +72,10 @@ namespace Inzynierka.ViewModel
 
         #endregion Models
 
-        #region Value
-        public Double Value { get; set; }
-        #endregion Value
-        
         #endregion Properties
-
-        #region Buttons
-        //public ICommand StepButton { get; set; } // TODO DELETE
-        #endregion Buttons
 
         public MainWindowViewModel()
         {
-            /*
-            {
-                // TODO TMP
-                _model = new PoliReactor(new PoliReactorFactory().Properties);
-                _algorithm = new PredictionControl(_model, new PredictionControlFactory().Properties, new PredictionControlFactory().LoggedValues);
-            }
-             */
 
 #region Algorithm & Model Factories Initialisaton
 
@@ -106,22 +91,6 @@ namespace Inzynierka.ViewModel
             };
 
 #endregion Algorithm & Model Factories Initialisaton
-
-            /*
-#region Button Initialisation
-
-            StepButton = new ButtonCommand(
-                () =>
-                {
-                    //step
-                    this.Value = (Double)_algorithm.GetValueTMP();
-                    OnPropertyChanged("Value");
-                },
-                () => true
-            );
-
-#endregion Button Initialisation
-             */
         }
     }
 }

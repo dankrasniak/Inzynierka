@@ -35,7 +35,8 @@
                 <ColumnDefinition/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <Canvas Background="#FFFFFFFF" Margin="10" Grid.ColumnSpan="5" Grid.RowSpan="4">
+            <UserControl Content="{Binding Content}" Background="#FFFFFFFF" Margin="10" Grid.ColumnSpan="5" Grid.RowSpan="4"/>
+            <!--<Canvas Background="#FFFFFFFF" Margin="10" Grid.ColumnSpan="5" Grid.RowSpan="4">
                 <Ellipse Fill="Teal" Height="30" Width="3" Canvas.Left="166" Canvas.Top="80" />
                 <Ellipse Fill="Teal" Height="30" Width="3" Canvas.Left="567" Canvas.Top="80" />
                 <Line Fill="Teal" Height="3" Width="400" Canvas.Left="168" Canvas.Top="95" Y1="1" X1="1" Y2="1" X2="2" Stretch="Fill" Stroke="Teal" OpacityMask="Teal" StrokeThickness="1.5"/>
@@ -46,7 +47,7 @@
                         </TransformGroup>
                     </Line.RenderTransform>
                 </Line>
-            </Canvas>
+            </Canvas>-->
             
             <Border BorderBrush="Black" BorderThickness="1" Grid.ColumnSpan="5" Grid.Column="0" Grid.Row="4" Grid.RowSpan="4"/>
 

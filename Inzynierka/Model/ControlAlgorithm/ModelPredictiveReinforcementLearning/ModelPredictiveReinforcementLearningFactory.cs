@@ -19,6 +19,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
 
             Properties = new List<Property>();
             Properties.Add(new Property("Horizon", 5, "Długość horyzontu", 1, 100));
+            Properties.Add(new Property("PredictionHorizon", 20, "Długość horyzontu predykcji", 0.00001, 20000.0)); // TODO
             Properties.Add(new Property("Neurons Number", 50, "Liczba neuronów w sieci neuronowej.", 1, 1000));
             Properties.Add(new Property("BetaV", 0.001, "Skalar stosowany przy gradiencie dodawanym do wag sieci neuronowej.", 0.0, 10.0));
             Properties.Add(new Property("Discount", 0.95, "Wartość dyskonta stosowanego przy funkcji wartości stanu.", 0.0, 1.0));
@@ -30,7 +31,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
             Properties.Add(new Property("TimesToAdjust", 100, "Ilość razy ile ma mieć miejsce próba poprawienia wartości sterujących na horyzoncie.", 1, 1000));
             Properties.Add(new Property("TimesToTeach", 10, "Ilość razy ile ma mieć miejsce nauka sieci neuronowej, co iterację, na podstawie uzyskanej bazy wiedzy.", 1, 1000));
             Properties.Add(new Property("TimeLimit", 10, "Limit czasu na jeden epizod.", 1, 1000));
-            Properties.Add(new Property("TimesToAdjustPastActions", 30, "Ile razy ma być poprawiane przeszłe wartości sterujące.", 1, 1000));
+            Properties.Add(new Property("TimesToAdjustPastActions", 100, "Ile razy ma być poprawiane przeszłe wartości sterujące.", 1, 1000));
 
             LoggedValues = new List<LoggedValue>();
             LoggedValues.Add(new LoggedValue(Name, "Wartość wyjściowa", false));
