@@ -148,61 +148,23 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             UpdateSigma();
         }
 
-        private double GetHorizonValue2(IEnumerable<List<double>> horizon)
+        private double GetHorizonValue(List<List<double>> horizon)
         {
             var horizonValue = 0.0;
             var horizonStatesList = GetHorizonStatesList(_state, horizon);
 
-            for (int i = 0; i < _horizonSize; ++i)
+            for (int i = 0; i < _predictionHorizonSize; ++i)
             {
                 if (_model.IsStateAcceptable(horizonStatesList[i]))
-                    horizonValue += ((double)(_predictionHorizonSize - i) / _predictionHorizonSize) * _model.GetReward(horizonStatesList[i]);
+                    horizonValue += _model.GetReward(horizonStatesList[i]);
                 else
                 {
-                    for (; i < _horizonSize; ++i) // TODO
-                    {
-                        horizonValue += ModelPenalty();
-                        break;
-                    }
+                    horizonValue += _model.Penalty();
+                    break;
                 }
-            }
-            for (int i = _horizonSize - 1; i < _predictionHorizonSize; ++i)
-            {
-                horizonValue += ((double)(_predictionHorizonSize - i) / _predictionHorizonSize) * _model.GetReward(horizonStatesList[_horizonSize - 1]);
             }
 
             return horizonValue;
-        }
-
-        private double GetHorizonValue(IEnumerable<List<double>> horizon)
-        {
-            var horizonValue = 0.0;
-            var horizonStatesList = GetHorizonStatesList(_state, horizon);
-
-            for (int i = 0; i < _horizonSize; ++i)
-            {
-                if (_model.IsStateAcceptable(horizonStatesList[i]))
-                    horizonValue += ((double)(_predictionHorizonSize - i) / _predictionHorizonSize) * _model.GetReward(horizonStatesList[i]);
-                else
-                {
-                    for (; i < _horizonSize; ++i) // TODO
-                    {
-                        horizonValue += ModelPenalty();
-                        break;
-                    }
-                }
-            }
-            for (int i = _horizonSize - 1; i < _predictionHorizonSize; ++i)
-            {
-                horizonValue += ((double)(_predictionHorizonSize - i) / _predictionHorizonSize) * _model.GetReward(horizonStatesList[_horizonSize - 1]);
-            }
-
-            return horizonValue;
-        }
-
-        private double ModelPenalty()
-        {
-            return _model.Penalty(); // TODO
         }
 
         private List<List<Double>> ModifyHorizon(List<List<Double>> horizon)
@@ -260,7 +222,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
 
         #endregion EvoAlg
 
-        private List<List<Double>> GetHorizonStatesList(IEnumerable<double> initialState, IEnumerable<List<double>> horizon)
+        private List<List<Double>> GetHorizonStatesList(IEnumerable<double> initialState, List<List<double>> horizon)
         {
             var state = new List<Double>(initialState);
             var stateList = new List<List<Double>>();
@@ -269,6 +231,12 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
                 state = _model.StateFunction(state, controlValues);
 
                 stateList.Add(new List<Double>(state));
+            }
+            for (int i = _horizonSize; i < _predictionHorizonSize; ++i)
+            {
+                state = _model.StateFunction(state, horizon[_horizonSize - 1]);
+
+                stateList.Add(new List<double>(state));
             }
             return stateList;
         }
