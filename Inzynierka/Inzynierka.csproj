@@ -153,14 +153,17 @@
     <Compile Include="Model\Property.cs" />
     <Compile Include="ViewModel\SettingWindowViewModel.cs" />
     <Compile Include="ViewModel\SimulationViewModel.cs" />
+    <Compile Include="ViewModel\Visualisations\PendulumViewModel.cs" />
+    <Compile Include="ViewModel\Visualisations\IVisualisator.cs" />
+    <Compile Include="ViewModel\Visualisations\PoliReactiorViewModel.cs" />
     <Compile Include="View\LoadingScreen.xaml.cs">
       <DependentUpon>LoadingScreen.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\NewSimulation.xaml.cs">
       <DependentUpon>NewSimulation.xaml</DependentUpon>
     </Compile>
-    <Compile Include="View\Visualisations\Pendulum.xaml.cs">
-      <DependentUpon>Pendulum.xaml</DependentUpon>
+    <Compile Include="View\Visualisations\PendulumV.xaml.cs">
+      <DependentUpon>PendulumV.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\Settings.xaml.cs">
       <DependentUpon>Settings.xaml</DependentUpon>
@@ -205,7 +208,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="View\Visualisations\Pendulum.xaml">
+    <Page Include="View\Visualisations\PendulumV.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -1,4 +1,5 @@
-﻿using Inzynierka.Model;
+﻿using System.Windows.Controls;
+using Inzynierka.Model;
 using Inzynierka.Model.ControlAlgorithm;
 using Inzynierka.Model.Model;
 using Inzynierka.Model.Model.Pendulum;
@@ -7,6 +8,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Windows.Input;
+using Inzynierka.View;
+using Inzynierka.ViewModel.Visualisations;
 
 namespace Inzynierka.ViewModel
 {
@@ -22,31 +25,39 @@ namespace Inzynierka.ViewModel
                 _value = (List<Double>) value;
                 if (_value.Count != 0)
                 {
-                    if (Model is Pendulum)
-                    {
-                        PendulumX = _value[0]*200/((Pendulum) Model)._XMAX + 325.0;
-                        PendulumT = _value[1]*180/Math.PI;
-                    }
-                    else
-                        PendulumT = _value[0]*90/25000.5 - 90;
+                    _visualisator.SetValue(_value);
+//                    if (Model is Pendulum)
+//                    {
+//                        PendulumX = _value[0]*200/((Pendulum) Model)._XMAX + 325.0;
+//                        PendulumT = _value[1]*180/Math.PI;
+//                    }
+//                    else
+//                        PendulumT = _value[0]*90/25000.5 - 90;
                 }
-                OnPropertyChanged("PendulumX");
-                OnPropertyChanged("PendulumT");
+//                OnPropertyChanged("PendulumX");
+//                OnPropertyChanged("PendulumT");
             }
         }
 
-        public double PendulumX { get; set; }
+//        public double PendulumX { get; set; }
 
-        public double PendulumT { get; set; }
+//        public double PendulumT { get; set; }
 
         public IModel Model { get; set; }
 
-        private object _content = new View.Pendulum();
+        private IVisualisator _visualisator;
 
-        public object Content
+        private UserControl _content;
+
+        public UserControl Content
         {
             get { return _content; }
-            set { _content = value; }
+            set
+            {
+                _content = value;
+                _visualisator = (IVisualisator) _content.DataContext;
+                OnPropertyChanged("Content");
+            }
         }
 
         #region Properties
@@ -168,11 +179,12 @@ namespace Inzynierka.ViewModel
             );
             #endregion ButtonInitialisation
 
-            PendulumX = 325.0;
+            //PendulumX = 325.0;
 
             #region Thread
 
-            Value = new List<double>();
+            //Content = new PendulumV();
+            _value = new List<double>();
             Loop = false;
             IsFinished = false;
             var thread = new Thread(this.Foo);

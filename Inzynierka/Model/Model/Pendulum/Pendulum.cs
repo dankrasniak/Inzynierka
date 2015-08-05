@@ -8,7 +8,7 @@ namespace Inzynierka.Model.Model.Pendulum
     public class Pendulum : IModel
     {
         public static string Name = "Pendulum";
-        public Double _XMAX = 2.4;
+        public static Double _XMAX = 2.4;
         private List<Double> _initialState;
         private Double _setpoint;
         private Double _commandingValue;

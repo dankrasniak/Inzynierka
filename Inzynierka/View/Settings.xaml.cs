@@ -1,5 +1,7 @@
 ﻿using Inzynierka.Model.ControlAlgorithm;
 using Inzynierka.Model.Model;
+using Inzynierka.Model.Model.Pendulum;
+using Inzynierka.View.Visualisations;
 using Inzynierka.ViewModel;
 using System.Linq;
 using System.Windows;
@@ -54,6 +56,11 @@ namespace Inzynierka.View
                 dc.PropertiesA, dc.Log);
             simulationDataContext.PropertiesM = dc.PropertiesM;
             simulationDataContext.PropertiesA = dc.PropertiesA;
+            // TODO
+            if (dc.ModelFactory is PendulumFactory)
+                simulationDataContext.Content = new PendulumV();
+            else
+                simulationDataContext.Content = new PoliReactorCounter();
 
             simulation.Show();
             this.Close();

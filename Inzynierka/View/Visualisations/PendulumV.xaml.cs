@@ -18,9 +18,9 @@ namespace Inzynierka.View
     /// <summary>
     /// Interaction logic for Pendulum.xaml
     /// </summary>
-    public partial class Pendulum : UserControl
+    public partial class PendulumV : UserControl
     {
-        public Pendulum()
+        public PendulumV()
         {
             InitializeComponent();
         }
