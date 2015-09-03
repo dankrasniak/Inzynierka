@@ -27,12 +27,14 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             Properties.Add(new Property("TimeLimit", 15, "Limit czasu na jeden epizod.", 1, 1000));
             Properties.Add(new Property("OptimisationIterationLimit", 500, "Limit iteracji na jedną akcję opltyamlizacyjną.", 1, 1000));
 
-            LoggedValues = new List<LoggedValue>();
-            LoggedValues.Add(new LoggedValue(Name, "Wartość wyjściowa", false));
-            LoggedValues.Add(new LoggedValue(Name, "stateVariables", false));
-            LoggedValues.Add(new LoggedValue(Name, "horizon", false));
-            LoggedValues.Add(new LoggedValue(Name, "Possible states", false));
-            LoggedValues.Add(new LoggedValue(Name, "Wartość wejściowa", false));
+            LoggedValues = new List<LoggedValue>
+            {
+                new LoggedValue(Name, "Wartość wyjściowa", false),
+                new LoggedValue(Name, "stateVariables", false),
+                new LoggedValue(Name, "horizon", false),
+                new LoggedValue(Name, "Possible states", false),
+                new LoggedValue(Name, "Wartość wejściowa", false)
+            };
         }
 
         public override IAlgorithm CreateAlgorithm(IModel model, List<Property> properties, List<LoggedValue> loggedValues)

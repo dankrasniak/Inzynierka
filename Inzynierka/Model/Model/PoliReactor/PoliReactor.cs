@@ -148,7 +148,7 @@ namespace Inzynierka.Model.Model.PoliReactor
 
         public Double GetReward(List<Double> state)
         {
-            return (-1)*Math.Pow(GetDiscrepancy(state), 2) / _setpoint; // TODO
+            return (-1) * Math.Pow(GetDiscrepancy(state) / _setpoint, 2); // TODO
         }
 
         public List<Double> MeddleWithGoalAndStartingState()

@@ -6,7 +6,7 @@ namespace Inzynierka.ViewModel.Visualisations
     {
         public void SetValue(List<double> values)
         {
-            PendulumT = values[0] * 90 / 25000.5 - 90;
+            PendulumT = values[0] * 90 / 25000.5 - 90; // TODO Stała wartość
 
             OnPropertyChanged("PendulumT");
         }

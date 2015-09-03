@@ -1,15 +1,13 @@
-﻿using System.Windows.Controls;
-using Inzynierka.Model;
+﻿using Inzynierka.Model;
 using Inzynierka.Model.ControlAlgorithm;
 using Inzynierka.Model.Model;
-using Inzynierka.Model.Model.Pendulum;
+using Inzynierka.ViewModel.Visualisations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Windows.Controls;
 using System.Windows.Input;
-using Inzynierka.View;
-using Inzynierka.ViewModel.Visualisations;
 
 namespace Inzynierka.ViewModel
 {
@@ -17,7 +15,7 @@ namespace Inzynierka.ViewModel
     {
 
         private List<Double> _value;
-        public object Value // TODO Pendulum
+        public object Value
         {
             get { return _value.Aggregate("", (current, added) => current + added.ToString() + "\n"); }
             set
@@ -26,22 +24,9 @@ namespace Inzynierka.ViewModel
                 if (_value.Count != 0)
                 {
                     _visualisator.SetValue(_value);
-//                    if (Model is Pendulum)
-//                    {
-//                        PendulumX = _value[0]*200/((Pendulum) Model)._XMAX + 325.0;
-//                        PendulumT = _value[1]*180/Math.PI;
-//                    }
-//                    else
-//                        PendulumT = _value[0]*90/25000.5 - 90;
                 }
-//                OnPropertyChanged("PendulumX");
-//                OnPropertyChanged("PendulumT");
             }
         }
-
-//        public double PendulumX { get; set; }
-
-//        public double PendulumT { get; set; }
 
         public IModel Model { get; set; }
 
@@ -131,7 +116,7 @@ namespace Inzynierka.ViewModel
             StepButton = new ButtonCommand(
                 () =>
                 { // Step of a simulation
-                    var data = Algorithm.GetValueTMP();
+                    var data = Algorithm.GetOutput();
                     Value = data.Values;
                     OnPropertyChanged("Value");
                     TimeIndex = data.IterationNumber;
@@ -179,11 +164,8 @@ namespace Inzynierka.ViewModel
             );
             #endregion ButtonInitialisation
 
-            //PendulumX = 325.0;
-
             #region Thread
 
-            //Content = new PendulumV();
             _value = new List<double>();
             Loop = false;
             IsFinished = false;
@@ -199,26 +181,7 @@ namespace Inzynierka.ViewModel
             {
                 while (Loop)
                 {
-                    var data = Algorithm.GetValueTMP();
-                    Value = data.Values;
-                    OnPropertyChanged("Value");
-                    TimeIndex = data.IterationNumber;
-                    OnPropertyChanged("TimeIndex");
-                    EpisodeNumber = data.EpisodeNumber;
-                    OnPropertyChanged("EpisodeNumber");
-                }
-                while (Faster)
-                {
-                    Algorithm.GetValueTMP();
-                    Algorithm.GetValueTMP();
-                    Algorithm.GetValueTMP();
-                    Algorithm.GetValueTMP();
-                    Algorithm.GetValueTMP();
-                    Algorithm.GetValueTMP();
-                    Algorithm.GetValueTMP();
-                    Algorithm.GetValueTMP();
-                    Algorithm.GetValueTMP();
-                    var data = Algorithm.GetValueTMP();
+                    var data = Algorithm.GetOutput();
                     Value = data.Values;
                     OnPropertyChanged("Value");
                     TimeIndex = data.IterationNumber;

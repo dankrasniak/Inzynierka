@@ -61,7 +61,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             }
         }
 
-        public Data GetValueTMP()
+        public Data GetOutput()
         {
             if (_iterationNumExternal++ > _iterationsLimit)
                 NextEpisode();
@@ -148,7 +148,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             UpdateSigma();
         }
 
-        private double GetHorizonValue(List<List<double>> horizon)
+        private double GetHorizonValue(List<List<double>> horizon) // TODO dodać sigmę
         {
             var horizonValue = 0.0;
             var horizonStatesList = GetHorizonStatesList(_state, horizon);
@@ -167,7 +167,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             return horizonValue;
         }
 
-        private List<List<Double>> ModifyHorizon(List<List<Double>> horizon)
+        private List<List<Double>> ModifyHorizon2(List<List<Double>> horizon)
         {
             var modifiedHorizon = new List<List<Double>>();
             var CONTROL_VARIABLES_NR = (horizon[0]).Count;
@@ -182,6 +182,26 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
                 {
                     modifiedHorizon[i][j] = Math.Min(
                         Math.Max(_minAction[j], horizon[i][j] + _sigma * sigmaDiscount * GetGaussian()),
+                        _maxAction[j]);
+                }
+            }
+
+            return modifiedHorizon;
+        }
+
+        private List<List<Double>> ModifyHorizon(List<List<Double>> horizon)
+        {
+            var modifiedHorizon = new List<List<Double>>();
+            var CONTROL_VARIABLES_NR = (horizon[0]).Count;
+
+            for (int i = 0; i < _horizonSize; ++i)
+            {
+                modifiedHorizon.Add(new List<Double>(horizon[i]));
+
+                for (int j = 0; j < CONTROL_VARIABLES_NR; ++j)
+                {
+                    modifiedHorizon[i][j] = Math.Min(
+                        Math.Max(_minAction[j], horizon[i][j] + _sigma * GetGaussian()),
                         _maxAction[j]);
                 }
             }

@@ -56,7 +56,7 @@ namespace Inzynierka.View
                 dc.PropertiesA, dc.Log);
             simulationDataContext.PropertiesM = dc.PropertiesM;
             simulationDataContext.PropertiesA = dc.PropertiesA;
-            // TODO
+            // TODO _model.daj Vizualizację
             if (dc.ModelFactory is PendulumFactory)
                 simulationDataContext.Content = new PendulumV();
             else

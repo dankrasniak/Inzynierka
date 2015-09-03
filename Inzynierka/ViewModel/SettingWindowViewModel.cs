@@ -94,7 +94,7 @@ namespace Inzynierka.ViewModel
                 }
                 OnPropertyChanged("PropertiesM");
 
-
+                // Odkomentować w przypadku chęci zaimplementowania wartości logowalnych w kodzie obietków dynamicznych.
                 //foreach (var e in _modelFactory.LoggedValues)
                 //{
                 //    Log.Add(e);

@@ -21,16 +21,20 @@ namespace Inzynierka.View
         private void AcceptButton(object sender, RoutedEventArgs e)
         {
             var vm = (MainWindowViewModel) this.DataContext;
-            if (false) // TODO
-            {
-                if (vm.SelectedAlgorithm.Equals(null) || vm.SelectedModel.Equals(null))
-                    return; // TODO NEW WINDOW("SET THE ALGORITHM / MODEL FIRST FAGGET!");
-            }
-            Settings s = new Settings(vm.SelectedAlgorithm, vm.SelectedModel);
-            s.Owner = this.Owner;
 
-            s.Show();
-            this.Close();
+            if (vm.SelectedAlgorithm == null || vm.SelectedModel == null)
+            {
+                var error = new ErrorWindow("Przed przejściem dalej, proszę wybrać algorytm sterujący i obiekt dynamiczny.");
+                error.Show();
+            }
+            else
+            {
+                var s = new Settings(vm.SelectedAlgorithm, vm.SelectedModel);
+                s.Owner = this.Owner;
+
+                s.Show();
+                this.Close();
+            }
         }
     }
 }

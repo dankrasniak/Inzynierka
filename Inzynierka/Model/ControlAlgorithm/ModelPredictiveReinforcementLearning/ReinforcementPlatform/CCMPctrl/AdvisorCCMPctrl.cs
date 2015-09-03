@@ -127,7 +127,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
         }
 
         /// <returns>The value returned by the model.</returns>
-        public Data GetValueTMP() 
+        public Data GetOutput() 
         {
             if (TimeIndex > IterationsLimit)
                 NextEpisode();
@@ -289,8 +289,8 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
         protected int Phi;
         protected int IterationsNrOpti;
         private readonly int M = 10;
-        private const double C1 = 0.82;
-        private const double C2 = 1.2;
+        private const double C1 = 0.82; // 0.5
+        private const double C2 = 1.2; // 2 
 
         protected void PrepareHorizon(int iterationLimit, Vector state, ref Vector[] currentActions, ref Vector[] currentNextStates, ref double stateValue)
         {

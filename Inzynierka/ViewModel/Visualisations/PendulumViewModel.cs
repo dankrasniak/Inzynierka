@@ -8,7 +8,7 @@ namespace Inzynierka.ViewModel.Visualisations
     {
         public void SetValue(List<double> values)
         {
-            PendulumX = values[0] * 200 / Pendulum._XMAX + 325.0;
+            PendulumX = values[0] * 200 / Pendulum._XMAX + 325.0; 
             PendulumT = values[1] * 180 / Math.PI;
 
             OnPropertyChanged("PendulumX");

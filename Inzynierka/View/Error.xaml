@@ -24,6 +24,6 @@
             <TextBlock Name="TextBlock" TextWrapping="Wrap" Text="TextBlock" Foreground="White"
                        x:FieldModifier="private" />
         </ScrollViewer>
-        <Button Grid.ColumnSpan="3" Content="OK" Grid.Column="1" Margin="10" Grid.Row="4"/>
+        <Button Grid.ColumnSpan="3" Content="OK" Grid.Column="1" Margin="10" Grid.Row="4" Click="AcceptButton"/>
     </Grid>
 </Window>

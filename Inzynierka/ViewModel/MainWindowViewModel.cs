@@ -11,15 +11,8 @@ namespace Inzynierka.ViewModel
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        // TODO TMP
-        private PredictionControl _algorithm;
-        private PoliReactor _model;
-
         #region Properties
 
-        /** Instructions
-         * Input window variables here.
-         */
         #region Algorithms
 
         public List<AAlgorithmFactory> Algorithms { get; set; }
@@ -48,6 +41,7 @@ namespace Inzynierka.ViewModel
 
         #endregion Algorithms
 
+
         #region Models
         public List<AModelFactory> Models { get; set; }
 
@@ -74,10 +68,11 @@ namespace Inzynierka.ViewModel
 
         #endregion Properties
 
+
         public MainWindowViewModel()
         {
 
-#region Algorithm & Model Factories Initialisaton
+#region Algorithm & Model Factories Initialisation
 
             Algorithms = new List<AAlgorithmFactory>()
             {
@@ -90,7 +85,7 @@ namespace Inzynierka.ViewModel
                 new PendulumFactory()
             };
 
-#endregion Algorithm & Model Factories Initialisaton
+#endregion Algorithm & Model Factories Initialisation
         }
     }
 }
