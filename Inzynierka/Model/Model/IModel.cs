@@ -11,9 +11,6 @@ namespace Inzynierka.Model.Model
 
         List<Double> GetValue(List<Double> stateVariables);
 
-        // By how much the current output value is different from the setpoint.
-        Double GetDiscrepancy(List<Double> stateVariables);
-
         List<Double> GetInitialState();
 
         Boolean IsStateAcceptable(List<Double> state);
@@ -31,5 +28,11 @@ namespace Inzynierka.Model.Model
         double Penalty();
 
         List<Double> TurnStateToNNAcceptable(List<Double> state);
+
+        List<Double> GetStateValuesStandardDeviationNN();
+
+        List<Double> GetStateValuesAverageNN();
+
+        List<Double> GetAdditionalValues();
     }
 }

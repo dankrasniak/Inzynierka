@@ -58,7 +58,7 @@ namespace Inzynierka.Model.Logger
             // Add Logger to Dictionary
             _loggers.Add(name, logger);
 
-            XmlConfigurator.Configure(); // TODO Validate the use. Does it have to be called everytime after creating a logger.
+            XmlConfigurator.Configure();
         }
 
         public void Log(String name, Double value)
@@ -68,7 +68,7 @@ namespace Inzynierka.Model.Logger
                 return;
 
             if (!_loggers.Contains(name))
-                CreateLogger(name, "%d - %m%n");
+                CreateLogger(name, "%m%n");//%d - %m%n
 
             (_loggers[name] as ILog).Info(FormatDouble(value));
         }
@@ -80,7 +80,7 @@ namespace Inzynierka.Model.Logger
                 return;
 
             if (!_loggers.Contains(name))
-                CreateLogger(name, "%d - %m%n");
+                CreateLogger(name, "%m%n");//%d - %m%n
 
             (_loggers[name] as ILog).Info(value);
         }

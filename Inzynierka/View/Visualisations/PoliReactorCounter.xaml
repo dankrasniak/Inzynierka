@@ -11,6 +11,7 @@
     <Grid>
         <Canvas Background="#FFFFFFFF">
             <TextBlock Text="0" Canvas.Left="251" Canvas.Top="82"/>
+            <TextBlock Text="{Binding Value90}" Canvas.Left="323" Canvas.Top="12"/>
             <Ellipse Fill="Teal" Height="30" Width="3" Canvas.Left="262" Canvas.Top="83" RenderTransformOrigin="0.5,0.5" >
                 <Ellipse.RenderTransform>
                     <TransformGroup>
@@ -18,6 +19,16 @@
                         <SkewTransform/>
                         <RotateTransform Angle="90"/>
                         <TranslateTransform/>
+                    </TransformGroup>
+                </Ellipse.RenderTransform>
+            </Ellipse>
+            <Ellipse Fill="DarkOrange" Height="30" Width="3" Canvas.Left="263" Canvas.Top="-50" RenderTransformOrigin="0.6,2.7" >
+                <Ellipse.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="{Binding SetPointAngle}"/>
+                        <TranslateTransform X="62.259" Y="66.261"/>
                     </TransformGroup>
                 </Ellipse.RenderTransform>
             </Ellipse>

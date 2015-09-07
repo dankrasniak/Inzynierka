@@ -128,7 +128,7 @@ namespace Inzynierka.Model.Model.PoliReactor
 
         public Double GetDiscrepancy(List<Double> stateVariables)
         {
-            return Math.Abs(_setpoint - GetValue(stateVariables)[0]); // TODO Czy musi być Abs
+            return Math.Abs(_setpoint - GetValue(stateVariables)[0]);
         }
 
         public List<Double> GenerateControlVariables()
@@ -175,12 +175,33 @@ namespace Inzynierka.Model.Model.PoliReactor
 
         public double Penalty()
         {
-            return -_setpoint;
+            return -20;
         }
 
         public List<Double> TurnStateToNNAcceptable(List<Double> state)
         {
-            return state; // TODO
+            return new List<double>(){
+                state[0],
+                state[1],
+                state[2],
+                state[3],
+                _setpoint
+            };
+        }
+
+        public List<double> GetStateValuesStandardDeviationNN()
+        {
+            return new List<double>() {1.0, 1.0, 1.0, 1.0, 1.0}; //5.506774, 0.132906, 0.0019752, 49.38182, 25000.5 };
+        }
+
+        public List<double> GetStateValuesAverageNN()
+        {
+            return new List<double>() { 0.0, 0.0, 0.0, 0.0, 0.0 };
+        }
+
+        public List<Double> GetAdditionalValues()
+        {
+            return new List<double>() { _setpoint, 25000 };
         }
     }
 }

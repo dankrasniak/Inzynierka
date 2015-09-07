@@ -92,11 +92,6 @@ namespace Inzynierka.Model.Model.Pendulum
             return new List<double>() {stateVariables[0], stateVariables[1]};
         }
 
-        public Double GetDiscrepancy(List<Double> stateVariables)
-        {
-            return Math.Abs(_setpoint - Math.PI - Math.Abs(Math.PI - GetValue(stateVariables)[1])); // TODO
-        }
-
         public List<Double> GenerateControlVariables()
         {
             return new List<Double>() { _commandingValue };
@@ -149,6 +144,21 @@ namespace Inzynierka.Model.Model.Pendulum
                 state[2],
                 state[3]
             };
+        }
+
+        public List<double> GetStateValuesStandardDeviationNN()
+        {
+            return new List<double>() { 2.0, 0.8, 0.8, 3.0, 4.0 };
+        }
+
+        public List<double> GetStateValuesAverageNN()
+        {
+            return new List<double>() { 0.0, 0.0, 0.0, 0.0, 0.0 };
+        }
+
+        public List<Double> GetAdditionalValues()
+        {
+            return new List<double>() {_XMAX};
         }
     }
 }

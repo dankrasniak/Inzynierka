@@ -10,5 +10,7 @@ namespace Inzynierka.Model
         public int EpisodeNumber { get; set; }
 
         public int IterationNumber { get; set; }
+
+        public List<Double> AdditionalValue { get; set; }
     }
 }

@@ -3,6 +3,7 @@ using Inzynierka.Model.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Xceed.Wpf.Data.Stats;
 
 namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
 {
@@ -17,9 +18,13 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
         private readonly int _predictionHorizonSize;
         private int _iterationNumExternal;
         private int _episodeNr;
+        private double _discount;
         private readonly int _iterationsLimit;   // max czasu na jeden epizod
         private readonly double[] _minAction;    // min sterowania 
         private readonly double[] _maxAction;    // max sterowania
+        protected double VestSum;      // suma ocen sterowań na przestrzeni jednego epizodu
+        protected double VestAv;       // średnia ocen sterowań na przestrzeni 10 ostatich epizodów
+        protected List<double> VestList; // Wartości ocen sterowań na przestrzeni ostatnich 10 epizodów 
 
         public PredictionControl(IModel model, List<Property> properties, List<LoggedValue> loggedValues) 
         {
@@ -29,6 +34,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             M = (int) Convert.ToDouble(properties.Find(p => p.Name.Equals("M")).Value);
             _horizonSize = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("Horizon")).Value);
             _predictionHorizonSize = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("PredictionHorizon")).Value); // TODO
+            _discount = Convert.ToDouble(properties.Find(p => p.Name.Equals("Discount")).Value);
             _startSigma = Convert.ToDouble(properties.Find(p => p.Name.Equals("StartSigma")).Value);
             _sigmaMin = Convert.ToDouble(properties.Find(p => p.Name.Equals("SigmaMin")).Value);
             var externalDiscretization =
@@ -45,6 +51,8 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             _state = new List<double>(_model.GetInitialState());
             _minAction = _model.MinActionValues();
             _maxAction = _model.MaxActionValues();
+            VestSum = 0;
+            VestList = new List<double>(10);
 
             GenerateHorizon();
             _iterationNumExternal = 0;
@@ -76,21 +84,48 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
                 _state.Aggregate("", (s, d) => s + FormatDouble(d) + " "));
 
             if (!_model.IsStateAcceptable(_state))
+            {
+                VestSum += _model.Penalty();
                 NextEpisode();
+            }
+            else
+                VestSum += _model.GetReward(_state);
+
 
             var result = _model.GetValue(_state);
-            var temp = result.Aggregate("", (current, add) => current + add);
-            _logger.Log("Wartość wyjściowa", temp);
+            var temp = result.Aggregate("", (current, add) => current + " " + add);
+            _logger.Log("Wartość wyjściowa", temp); // TODO_model.GetReward(result)
 
+            result.AddRange(_model.GetAdditionalValues());
             return new Data() { Values = result, IterationNumber = _iterationNumExternal, EpisodeNumber = _episodeNr }; // TODO
         }
 
         private void NextEpisode()
         {
-            _state = new List<double>(_model.MeddleWithGoalAndStartingState());
+            //_logger.Log("Wartość wyjściowa", ""); // TODO
+            VestSum /= _iterationNumExternal;
+            UpdateVestList(VestSum);
+            _state = new List<double>(_model.MeddleWithGoalAndStartingState()); //new List<double>(_model.GetInitialState());//
             GenerateHorizon();
             _iterationNumExternal = 0;
             ++_episodeNr;
+        }
+
+        protected void UpdateVestList(double VestSum)
+        {
+            var listLength = VestList.Count;
+            if (listLength < 10)
+            {
+                VestAv = (VestAv * listLength + VestSum) / (listLength + 1);
+                VestList.Add(VestSum);
+            }
+            else
+            {
+                VestAv = VestAv - VestList[0] / 10 + VestSum / 10;
+                VestList.RemoveAt(0);
+                VestList.Add(VestSum);
+            }
+            _logger.Log("Średnie Wartości nagród z 10 epizodów", VestAv);
         }
 
         private List<Double> GetControlVariables()
@@ -148,15 +183,16 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             UpdateSigma();
         }
 
-        private double GetHorizonValue(List<List<double>> horizon) // TODO dodać sigmę
+        private double GetHorizonValue(List<List<double>> horizon)
         {
             var horizonValue = 0.0;
             var horizonStatesList = GetHorizonStatesList(_state, horizon);
+            var HORIZON_LENGTH = Math.Max(_predictionHorizonSize, _horizonSize);
 
-            for (int i = 0; i < _predictionHorizonSize; ++i)
+            for (int i = 0; i < HORIZON_LENGTH; ++i)
             {
                 if (_model.IsStateAcceptable(horizonStatesList[i]))
-                    horizonValue += _model.GetReward(horizonStatesList[i]);
+                    horizonValue += _discount * _model.GetReward(horizonStatesList[i]);
                 else
                 {
                     horizonValue += _model.Penalty();
@@ -165,28 +201,6 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             }
 
             return horizonValue;
-        }
-
-        private List<List<Double>> ModifyHorizon2(List<List<Double>> horizon)
-        {
-            var modifiedHorizon = new List<List<Double>>();
-            var CONTROL_VARIABLES_NR = (horizon[0]).Count;
-            double sigmaDiscount;
-
-            for (int i = 0; i < _horizonSize; ++i)
-            {
-                modifiedHorizon.Add(new List<Double>(horizon[i]));
-                sigmaDiscount = (double)(i + 1) / _horizonSize;
-
-                for (int j = 0; j < CONTROL_VARIABLES_NR; ++j)
-                {
-                    modifiedHorizon[i][j] = Math.Min(
-                        Math.Max(_minAction[j], horizon[i][j] + _sigma * sigmaDiscount * GetGaussian()),
-                        _maxAction[j]);
-                }
-            }
-
-            return modifiedHorizon;
         }
 
         private List<List<Double>> ModifyHorizon(List<List<Double>> horizon)
