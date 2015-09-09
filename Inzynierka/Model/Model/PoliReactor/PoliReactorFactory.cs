@@ -15,10 +15,10 @@ namespace Inzynierka.Model.Model.PoliReactor
 
             Properties = new List<Property>();
             Properties.Add(new Property("H_STEP", 0.001, "RungeKutta, wartość skoku.", 0.00001, 1.0));
-            Properties.Add(new Property("S0V1", 0.01, "Wartość 1 stanu poczatkowego reaktora.", 0.0, 1000));
-            Properties.Add(new Property("S0V2", 0.01, "Wartość 2 stanu poczatkowego reaktora.", 0.0, 1000));
-            Properties.Add(new Property("S0V3", 0.01, "Wartość 3 stanu poczatkowego reaktora.", 0.0, 1000));
-            Properties.Add(new Property("S0V4", 0.01, "Wartość 4 stanu poczatkowego reaktora.", 0.0, 1000));
+            Properties.Add(new Property("S0V1", 5.506774, "Wartość 1 stanu poczatkowego reaktora.", 0.0, 1000));
+            Properties.Add(new Property("S0V2", 0.132906, "Wartość 2 stanu poczatkowego reaktora.", 0.0, 1000));
+            Properties.Add(new Property("S0V3", 0.0019752, "Wartość 3 stanu poczatkowego reaktora.", 0.0, 1000));
+            Properties.Add(new Property("S0V4", 49.38182, "Wartość 4 stanu poczatkowego reaktora.", 0.0, 1000));
             Properties.Add(new Property("Setpoint", 25000.5, "Wartość, do której powinna zmierzać wartość wyjściowa reaktora.", 0.0, 50000.0));
             Properties.Add(new Property("CommandingValue", 0.0, "Pierwsza generowana wartość sterująca.", 0.0, 1000));
             Properties.Add(new Property("MinActionValue", 0.0, "Minimalna dopuszczalna wartość sterująca.", 0.0, 1000));

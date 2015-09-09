@@ -24,7 +24,6 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
         private readonly double[] _maxAction;    // max sterowania
         protected double VestSum;      // suma ocen sterowań na przestrzeni jednego epizodu
         protected double VestAv;       // średnia ocen sterowań na przestrzeni 10 ostatich epizodów
-        protected List<double> VestList; // Wartości ocen sterowań na przestrzeni ostatnich 10 epizodów 
 
         public PredictionControl(IModel model, List<Property> properties, List<LoggedValue> loggedValues) 
         {
@@ -41,7 +40,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
                 Convert.ToDouble(properties.Find(p => p.Name.Equals("ExternalDiscretization")).Value);
             var internalDiscretization =
                 Convert.ToDouble(properties.Find(p => p.Name.Equals("InternalDiscretization")).Value);
-            var TimeLimit = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("TimeLimit")).Value);
+            var TimeLimit = Convert.ToDouble(properties.Find(p => p.Name.Equals("TimeLimit")).Value);
             _iterationLimitOptimisation = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("OptimisationIterationLimit")).Value);
 
             _iterationsLimit = (int)(TimeLimit / externalDiscretization);
@@ -52,7 +51,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             _minAction = _model.MinActionValues();
             _maxAction = _model.MaxActionValues();
             VestSum = 0;
-            VestList = new List<double>(10);
+            VestAv = 0;
 
             GenerateHorizon();
             _iterationNumExternal = 0;
@@ -105,6 +104,7 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
             //_logger.Log("Wartość wyjściowa", ""); // TODO
             VestSum /= _iterationNumExternal;
             UpdateVestList(VestSum);
+            VestSum = 0;
             _state = new List<double>(_model.MeddleWithGoalAndStartingState()); //new List<double>(_model.GetInitialState());//
             GenerateHorizon();
             _iterationNumExternal = 0;
@@ -113,19 +113,13 @@ namespace Inzynierka.Model.ControlAlgorithm.PredictionControl
 
         protected void UpdateVestList(double VestSum)
         {
-            var listLength = VestList.Count;
-            if (listLength < 10)
+            VestAv += VestSum;
+            if ((_episodeNr + 1) % 100 == 0)
             {
-                VestAv = (VestAv * listLength + VestSum) / (listLength + 1);
-                VestList.Add(VestSum);
+                VestAv /= 10;
+                _logger.Log("Średnie wartości nagród z 10 epizodów", VestAv);
+                VestAv = 0;
             }
-            else
-            {
-                VestAv = VestAv - VestList[0] / 10 + VestSum / 10;
-                VestList.RemoveAt(0);
-                VestList.Add(VestSum);
-            }
-            _logger.Log("Średnie Wartości nagród z 10 epizodów", VestAv);
         }
 
         private List<Double> GetControlVariables()

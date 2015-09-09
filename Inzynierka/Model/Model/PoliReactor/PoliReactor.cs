@@ -148,18 +148,22 @@ namespace Inzynierka.Model.Model.PoliReactor
 
         public Double GetReward(List<Double> state)
         {
+            //return (-1) * Math.Pow(GetDiscrepancy(state) / 20000, 2); // TODO
             return (-1) * Math.Pow(GetDiscrepancy(state) / _setpoint, 2); // TODO
         }
 
         public List<Double> MeddleWithGoalAndStartingState()
         {
             var rand = new ASampler();
-            _setpoint = rand.Next(38000 - 25000) + 25000.5;
+            _setpoint = rand.Next(28000 - 20000) + 20000.5;
             var state = GetInitialState();
-            state[0] = rand.NextDouble() * 5.506774;
-            state[1] = rand.NextDouble() * 0.132906;
-            state[2] = rand.NextDouble() * 0.0019752;
-            state[3] = rand.NextDouble() * 49.38182;
+            while (GetValue(state)[0] < 25000.5 || GetValue(state)[0] > 38000.0)
+            {
+                state[0] = rand.NextDouble() * 5.506774;
+                state[1] = rand.NextDouble() * 0.132906;
+                state[2] = rand.NextDouble() * 0.0019752;
+                state[3] = rand.NextDouble() * 49.38182;
+            }
             return state;
         }
 
@@ -185,18 +189,21 @@ namespace Inzynierka.Model.Model.PoliReactor
                 state[1],
                 state[2],
                 state[3],
-                _setpoint
+                Math.Abs(_setpoint - GetValue(state)[0]),
+                _setpoint - GetValue(state)[0]
             };
         }
 
         public List<double> GetStateValuesStandardDeviationNN()
         {
-            return new List<double>() {1.0, 1.0, 1.0, 1.0, 1.0}; //5.506774, 0.132906, 0.0019752, 49.38182, 25000.5 };
+            //return new List<double>() {1.0, 1.0, 1.0, 1.0, 1.0}; //5.506774, 0.132906, 0.0019752, 49.38182, 25000.5 };
+            return new List<double>() { 0.4, 0.1, 0.001, 6, 3000, 3000 }; //5.506774, 0.132906, 0.0019752, 49.38182, 25000.5 };
         }
 
         public List<double> GetStateValuesAverageNN()
         {
-            return new List<double>() { 0.0, 0.0, 0.0, 0.0, 0.0 };
+            //return new List<double>() { 0.0, 0.0, 0.0, 0.0, 0.0 };
+            return new List<double>() { 6, 0.2, 0.002, 48, 0, 0};
         }
 
         public List<Double> GetAdditionalValues()

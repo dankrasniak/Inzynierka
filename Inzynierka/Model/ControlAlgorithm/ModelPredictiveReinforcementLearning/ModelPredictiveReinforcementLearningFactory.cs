@@ -19,11 +19,10 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
 
             Properties = new List<Property>();
             Properties.Add(new Property("Horizon", 5, "Długość horyzontu", 1, 100));
-            //Properties.Add(new Property("PredictionHorizon", 20, "Długość horyzontu predykcji", 0.00001, 20000.0)); // TODO
-            Properties.Add(new Property("Neurons Number", 50, "Liczba neuronów w sieci neuronowej.", 1, 1000));
+            Properties.Add(new Property("Neurons Number", 10, "Liczba neuronów w sieci neuronowej.", 1, 1000));
             Properties.Add(new Property("BetaV", 0.001, "Skalar stosowany przy gradiencie dodawanym do wag sieci neuronowej.", 0.0, 10.0));
             Properties.Add(new Property("Discount", 0.95, "Wartość dyskonta stosowanego przy funkcji wartości stanu.", 0.0, 1.0));
-            Properties.Add(new Property("Sigma", 1, "Wartość odchylenia standardowego.", 0.0, 1000));
+            Properties.Add(new Property("Sigma", 2.0, "Wartość odchylenia standardowego.", 0.0, 1000));
             Properties.Add(new Property("SigmaMin", 0.01, "Wartość odchylenia standardowego.", 0.0, 1000));
             Properties.Add(new Property("InternalDiscretization", 0.01, "Wartość kroku reprezentującego czas wewnątrze funkcji stanu.", 0.0, 100.0));
             Properties.Add(new Property("ExternalDiscretization", 0.1, "Wartość kroku reprezentującego czas trwania jednej wartości sterującej", 0.0, 100.0));
@@ -35,7 +34,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
             LoggedValues = new List<LoggedValue>();
             LoggedValues.Add(new LoggedValue(Name, "Wartość wyjściowa", false));
             LoggedValues.Add(new LoggedValue(Name, "Wartość wejściowa", false));
-            LoggedValues.Add(new LoggedValue(Name, "Średnie Wartości nagród z 10 epizodów", false));
+            LoggedValues.Add(new LoggedValue(Name, "Średnie wartości nagród z 10 epizodów", false));
             //LoggedValues.Add(new LoggedValue(Name, , true));
         }
 

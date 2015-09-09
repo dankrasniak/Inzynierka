@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Windows.Documents;
 using Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning.Computing;
 using Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning.Neural;
 using Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning.Probability;
@@ -49,7 +47,6 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
         protected double Vest;         // bieżąca ocena sterowań Actions 
         protected double VestSum;      // suma ocen sterowań na przestrzeni jednego epizodu
         protected double VestAv;       // średnia ocen sterowań na przestrzeni 10 ostatich epizodów
-        protected List<double> VestList; // Wartości ocen sterowań na przestrzeni ostatnich 10 epizodów 
 
         #region Ad. Biblioteka Programowa
 
@@ -77,7 +74,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
                 Convert.ToDouble(properties.Find(p => p.Name.Equals("ExternalDiscretization")).Value);
             var internalDiscretization =
                 Convert.ToDouble(properties.Find(p => p.Name.Equals("InternalDiscretization")).Value);
-	        var TimeLimit = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("TimeLimit")).Value);
+	        var TimeLimit = Convert.ToDouble(properties.Find(p => p.Name.Equals("TimeLimit")).Value);
             TimesToTeach = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("TimesToTeach")).Value);
             TimesToAdjustPastActions = (int)Convert.ToDouble(properties.Find(p => p.Name.Equals("TimesToAdjustPastActions")).Value);
 
@@ -90,7 +87,6 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
             Sampler = new ASampler();
             IterationsLimit = (int) (TimeLimit / externalDiscretization);
 	        VestSum = 0;
-            VestList = new List<double>(10);
 
             StartInState(_model.GetInitialState().ToArray());
             MinAction = new Vector(_model.MinActionValues());
@@ -150,6 +146,7 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
         {
             VestSum /= TimeIndex;
             UpdateVestList(VestSum);
+            VestSum = 0;
             TimeIndex = 0;
             ++_episodeNr;
 
@@ -166,19 +163,13 @@ namespace Inzynierka.Model.ControlAlgorithm.ModelPredictiveReinforcementLearning
 
         protected void UpdateVestList(double VestSum)
         {
-            var listLength = VestList.Count;
-            if (listLength < 10)
+            VestAv += VestSum;
+            if ((_episodeNr + 1)%10 == 0)
             {
-                VestAv = (VestAv*listLength + VestSum)/(listLength + 1);
-                VestList.Add(VestSum);
+                VestAv /= 10;
+                _logger.Log("Średnie wartości nagród z 10 epizodów", VestAv);
+                VestAv = 0;
             }
-            else
-            {
-                VestAv = VestAv - VestList[0]/10 + VestSum/10;
-                VestList.RemoveAt(0);
-                VestList.Add(VestSum);
-            }
-            _logger.Log("Średnie Wartości nagród z 10 epizodów", VestAv);
         }
 
 		public void StartInState(double[] state) 
